@@ -20,7 +20,7 @@ from rest_framework import routers
 from rest_framework_simplejwt import views as jwt_views
 from signin import views
 '''
-Auther Name: Pranav Singh
+Auther: Pranav Singh
 '''
 
 '''

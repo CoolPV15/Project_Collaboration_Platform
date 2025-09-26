@@ -3,7 +3,7 @@ from .models import Users
 from django.contrib.auth import get_user_model,authenticate
 User = get_user_model()
 '''
-Auther Name: Pranav Singh
+Auther: Pranav Singh
 '''
 
 '''

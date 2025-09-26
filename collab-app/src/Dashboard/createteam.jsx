@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+{/*Author: Pranav Singh*/}
 
 {/* Component for creating a team */}
 function CreateTeam() {

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../Interceptors/axiosInstance';
+{/*Author: Pranav Singh*/}
 
 function Logout() {
     const navigate = useNavigate();

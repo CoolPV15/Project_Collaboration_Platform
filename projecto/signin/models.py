@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 from .manager import UserManager
 '''
-Auther Name: Pranav Singh
+Auther: Pranav Singh
 '''
 
 '''

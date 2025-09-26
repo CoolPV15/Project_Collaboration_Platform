@@ -3,8 +3,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import './Signup.css';
 import { LeftPane } from "./Signin.jsx";
+{/* Author: Pranav Singh*/}
 
-{/* Author: Pranav Singh */}
 function SignUp() {
   {/*
       Component designed for the new users to sign up in their account

@@ -1,7 +1,7 @@
 from django.urls import path,include
 from signin import views
 '''
-Auther Name: Pranav Singh
+Auther: Pranav Singh
 '''
 
 

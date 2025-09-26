@@ -1,4 +1,5 @@
 import React from "react";
+{/*Author: Pranav Singh*/}
 
 {/*Component to display the available teams*/}
 function JoinTeam() {

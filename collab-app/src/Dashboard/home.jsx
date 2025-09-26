@@ -4,8 +4,8 @@ import axiosInstance from "../Interceptors/axiosInstance";
 import Logout from "./Logout.jsx";
 import CreateTeam from "./createteam.jsx";
 import JoinTeam from "./jointeam.jsx";
+{/* Author: Pranav Singh*/}
 
-{/* Author Name: Pranav Singh */}
 function Home() {
   {/* Using useState for handling the user details, and activeTab for 
     conditionally rendering the user details */}

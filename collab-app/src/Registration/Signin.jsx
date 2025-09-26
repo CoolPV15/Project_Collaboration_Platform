@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import './Signin.css';
 import axiosInstance from "../Interceptors/axiosInstance";
-import Invalidtoast from "./invalidtoast";
+{/* Author: Pranav Singh*/}
 
 export function LeftPane() {
   {/*
@@ -18,7 +18,6 @@ export function LeftPane() {
   );
 }
 
-{/* Author: Pranav Singh */}
 function RightPane() {
   {/*
     Component designed for the user with existing accounts to sign in 
@@ -44,7 +43,6 @@ function RightPane() {
       console.log("Login Successful");
       navigate('home');
     } catch (error) { 
-      <Invalidtoast /> 
       console.log("Error Logging in");
     }
   }
