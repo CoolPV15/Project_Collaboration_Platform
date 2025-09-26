@@ -2,7 +2,9 @@ import { useState } from 'react'
 import {BrowserRouter as Router, Route, Routes, Link} from "react-router-dom"
 import Signup from "./Registration/Signup.jsx"
 import Signin from "./Registration/Signin.jsx"
-import './App.css'
+import Home from "./Dashboard/home.jsx"
+import { AuthProvider } from './context/AuthProvider.jsx'
+import "./App.css"
 
 function App() {
   {/*
@@ -14,6 +16,7 @@ function App() {
       <Routes>
       <Route path="/" element={<Signin />}></Route>
       <Route path="signup" element={<Signup />}></Route>
+      <Route path="home" element={<Home />}></Route>
       </Routes>
     </Router>
     </>

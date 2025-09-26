@@ -1,118 +1,168 @@
-import { useState } from "react"
-import axios from "axios"
-import {BrowserRouter as Router, Link} from "react-router-dom"
-import './Signup.css'
-import {LeftPane} from "./Signin.jsx"
+import { useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import './Signup.css';
+import { LeftPane } from "./Signin.jsx";
 
-function SignUp(){
-    {/*
-        Component designed for the new users to sign up in their account
-        */}
+{/* Author: Pranav Singh */}
+function SignUp() {
+  {/*
+      Component designed for the new users to sign up in their account
+  */}
 
-    {/*
-        Using useState for handling all the data entered by the user in the specified field
-        */}
-        
-    const [fname,setFname] = useState('');
-    const [lname,setLname] = useState('');
-    const [prof, setProf] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+  {/*
+      Using useState for handling all the data entered by the user in the specified field, that includes,
+      "First Name", "Last Name", "Username", "Password" and a variable to store the proficiency of the user,
+      which includes options to select from, i.e., Frontent, Backend or both
+  */}
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+  const endpoint = `${import.meta.env.login_api_url}/accounts/`;
+  const [fname, setFname] = useState('');
+  const [lname, setLname] = useState('');
+  const [prof, setProf] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  {/*
+      Sending the data of the user on the backend after form submission, along with an alert containing a success
+      message or an error message
+  */}
+  const postData = async (event) => {
+    let front = false;
+    let back = false;
+    if (prof === "frontend") front = true;
+    else if (prof === "backend") back = true;
+    else {
+      front = true;
+      back = true;
     }
 
-    const handleAlert = () => {
-        event.preventDefault();
-        alert(`Your data is: ${fname} ${lname} ${prof} ${username} ${password}`);
+    const body = {
+      firstname: fname,
+      lastname: lname,
+      email: username,
+      password: password,
+      frontend: front,
+      backend: back
+    };
+
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/api/accounts/", body);
+      setFname("");
+      setLname("");
+      setProf("");
+      setUsername("");
+      setPassword("");
+      console.log("Account Created Successfully", response);
+      handleAlert();
+    } catch (error) {
+      console.log(error, "Error sending data");
     }
+  };
 
-    const handleFname = (event) => {
-        setFname(event.target.value);
-    }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await postData();
+  };
 
-    const handleLname = (event) => {
-        setLname(event.target.value);
-    }
+  const handleAlert = () => {
+    alert("Account Created Successfully");
+  };
 
-    const handleUsername = (evemt) => {
-        setUsername(event.target.value);
-    }
+  const handleFname = (event) => setFname(event.target.value);
+  const handleLname = (event) => setLname(event.target.value);
+  const handleUsername = (event) => setUsername(event.target.value);
+  const handlePassword = (event) => setPassword(event.target.value);
+  const handleProf = (event) => setProf(event.target.value);
 
-    const handlePassword = (event) => {
-        setPassword(event.target.value);
-    }
+  return (
+    <>
+      <title>Sign Up</title>
+      <div className="flex flex-col md:flex-row min-h-screen">
+        <LeftPane />
 
-    const handleProf = (event) => {
-        setProf(event.target.value);
-    }
+        <div className="flex justify-center items-center w-full md:w-1/2 bg-gray-50 p-10">
+          <div className="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl">
+            <h1 id="sn-tag" className="text-3xl font-bold text-center text-gray-900 mb-4">SIGN UP</h1>
+            <p className="text-center text-gray-600 mb-6">Please fill all the necessary details</p>
 
-    return(
-        <>
-        <title>Sign Up</title>
-        <div class="main-t">
-        <LeftPane/ >
-        <div class="main-tab">
-            <div class="mid-tab">
-            <div class="sign-in">
-                <h1 id="sn-tag"><solid>SIGN UP</solid></h1>
-                <p>Please fill all the necessary details</p>
-                <div class="sign-up-form">
-                    <form onSubmit={handleSubmit}>
-                    
-                    <div class="name">
-                    <label htmlFor="fname">
-                    <div class="fn-name">
-                        <input type="text" name="fname" htmlFor="fname" placeholder="First Name" onChange={handleFname} required/>
-                    </div>
-                    </label>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* First and Last Name */}
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  name="fname"
+                  placeholder="First Name"
+                  value={fname}
+                  onChange={handleFname}
+                  required
+                  className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  name="lname"
+                  placeholder="Last Name"
+                  value={lname}
+                  onChange={handleLname}
+                  required
+                  className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-                    <label htmlForm="lname">
-                    <div class="ln-name">
-                        <input type="text" name="lname" htmlFor="lname" placeholder="Last Name" onChange={handleLname} required/>
-                    </div>
-                    </label>
-                    </div>
+              {/* Proficiency */}
+              <select
+                value={prof}
+                onChange={handleProf}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="" disabled>Select your proficiency</option>
+                <option value="frontend">Frontend</option>
+                <option value="backend">Backend</option>
+                <option value="both">Both</option>
+              </select>
 
-                    <label htmlFor="prof-sel">
-                        <div class="sel-menu">
-                        <select id="prof-sel" onChange={handleProf} required>
-                            <option value="" disabled selected hidden>Select your proficiency</option>
-                            <option value="frontend">Frontend</option>
-                            <option value="backend">Backend</option>
-                            <option value="both">Both</option>
-                        </select>
-                        </div>
-                    </label>
+              {/* Username */}
+              <input
+                type="email"
+                name="username"
+                placeholder="Username"
+                value={username}
+                onChange={handleUsername}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-                    <label htmlFor="username">
-                    <div class="us-name">
-                        <input type="email" name="username" htmlFor="username" placeholder="Username" onChange={handleUsername} required/>
-                    </div>
-                    </label>
+              {/* Password */}
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={password}
+                onChange={handlePassword}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-                    <label htmlForm="password">
-                    <div class="pass">
-                        <input type="password" name="passwprd" htmlFor="password" placeholder="Password" onChange={handlePassword} required/>
-                    </div>
-                    </label>
+              {/* Sign Up Button */}
+              <button
+                type="submit"
+                className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+              >
+                SIGN UP
+              </button>
+            </form>
 
-                    <div class="sign-up-button">
-                        <button type="submit">SIGN UP</button>
-                    </div>
-
-                    </form>
-                </div>
-
-            <p>Already have an account?</p>
-                <Link to="/">Sign In</Link>
-            </div>
-            </div>
+            {/*Link to redirect to Sign In Page*/}
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Already have an account?
+              <Link to="/" className="text-blue-600 hover:underline ml-1">Sign In</Link>
+            </p>
+          </div>
         </div>
-        </div>
-        </>
-    )
+      </div>
+    </>
+  );
 }
 
-export default SignUp
+export default SignUp;
