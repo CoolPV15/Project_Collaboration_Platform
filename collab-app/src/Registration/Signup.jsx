@@ -2,9 +2,11 @@ import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import './Signup.css';
-import { LeftPane } from "./Signin.jsx";
+import LeftPane from './LeftPane.jsx'
+import ErrorToast from "../toasts/ErrorToast.jsx";
+import SuccessfulToast from "../toasts/SuccessfulToast.jsx";
+{/* Author: Pranav Singh*/}
 
-{/* Author: Pranav Singh */}
 function SignUp() {
   {/*
       Component designed for the new users to sign up in their account
@@ -22,7 +24,8 @@ function SignUp() {
   const [prof, setProf] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
+  const [error, setError] = useState(false);
+  const [created,setCreated] = useState(false);
   {/*
       Sending the data of the user on the backend after form submission, along with an alert containing a success
       message or an error message
@@ -48,15 +51,17 @@ function SignUp() {
 
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/accounts/", body);
+      setError('');
       setFname("");
       setLname("");
       setProf("");
       setUsername("");
       setPassword("");
-      console.log("Account Created Successfully", response);
-      handleAlert();
+      setCreated(true);
     } catch (error) {
-      console.log(error, "Error sending data");
+      setCreated(false);
+      setError(true);
+      console.log(error, "Error");
     }
   };
 
@@ -65,9 +70,10 @@ function SignUp() {
     await postData();
   };
 
-  const handleAlert = () => {
-    alert("Account Created Successfully");
-  };
+  const closePopUp = () => {
+    setError(false);
+    setCreated(false);
+  }
 
   const handleFname = (event) => setFname(event.target.value);
   const handleLname = (event) => setLname(event.target.value);
@@ -143,7 +149,8 @@ function SignUp() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-
+              {error && <ErrorToast error={"Oops! This account already exists"} onClose = {closePopUp}/>}
+              {created && <SuccessfulToast mssg1={"Account Created"} mssg2={"You can login now"} onClose={closePopUp}/>}
               {/* Sign Up Button */}
               <button
                 type="submit"

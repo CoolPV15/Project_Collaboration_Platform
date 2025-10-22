@@ -34,7 +34,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'signin',
+    'accounts',
+    'projects',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
@@ -101,7 +102,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'projectodb',
-        'USER' : 'postgres',
+        'USER' : 'adminpv',
         'PASSWORD' : 'blacksheep15',
         'HOST': 'localhost',
         'PORT': '5432'
@@ -112,7 +113,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_USER_MODEL = "signin.Users"
+AUTH_USER_MODEL = "accounts.Users"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
