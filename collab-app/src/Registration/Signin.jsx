@@ -1,22 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useContext} from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import './Signin.css';
+import LeftPane from './LeftPane.jsx'
+import ErrorToast from "../toasts/ErrorToast";
 import axiosInstance from "../Interceptors/axiosInstance";
+import { AuthContext } from "../context/AuthProvider.jsx";
 {/* Author: Pranav Singh*/}
-
-export function LeftPane() {
-  {/*
-    HTML component for the left pane to display the name of the website
-  */}
-  return (
-    <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-b from-blue-700 to-blue-500 text-white w-full md:w-1/2 h-screen p-10">
-      <h1 id="sitename" className="text-5xl font-extrabold mb-4">PROJECTO</h1>
-      <h3 id="sitedsc" className="text-xl font-medium text-center">PROJECT COLLABORATION PLATFORM</h3>
-    </div>
-  );
-}
 
 function RightPane() {
   {/*
@@ -28,8 +19,16 @@ function RightPane() {
   */}
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [checkdata, setData] = useState([]);
+  const {setAuthTokens} = useContext(AuthContext);
+
+  {/*Navigating to the Home dashboard if the user is already logged in*/}
+  useEffect(() =>{
+    if(localStorage.getItem("islogged")==="true"){
+      navigate("home");
+    }
+  },[]);
 
   const authenticateData = async (e) => {
     const user = { email: username, password: password };
@@ -38,14 +37,29 @@ function RightPane() {
       const { data } = await axiosInstance.post("token/", user);
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
+      localStorage.setItem("islogged","true");
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
-
       console.log("Login Successful");
+      setAuthTokens(data);
       navigate('home');
     } catch (error) { 
+      setError("Invalid Credentials");
       console.log("Error Logging in");
     }
   }
+
+
+  useEffect(() =>{
+    const handleStorageChange = (e) => {
+      if(e.key==="islogged" && e.newValue=="true"){
+        navigate("home");
+      }
+    }
+
+    window.addEventListener("storage",handleStorageChange);
+
+    return () => window.removeEventListener("storage",handleStorageChange);
+  },[])
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -87,6 +101,7 @@ function RightPane() {
               required 
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+            {error && <ErrorToast error={error}/>}
           </div>
 
           {/*Sign In Button*/}

@@ -9,11 +9,13 @@ function Logout() {
     const handleLogOut = async () => {
         // Capturing the refresh token
         const refresh_token = localStorage.getItem("refresh_token");
+        localStorage.setItem("islogged","false");
 
         if (!refresh_token) {
             // If no token is set, clearing the localStorage and redirecting to the login page
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
+            localStorage.setItem("islogged","false");
             delete axiosInstance.defaults.headers["Authorization"];
             navigate("/");
             return;
@@ -26,6 +28,7 @@ function Logout() {
             // Clearing the tokens after successful logout
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
+            localStorage.setItem("islogged","false");
             delete axiosInstance.defaults.headers["Authorization"];
 
             navigate("/");
@@ -35,6 +38,7 @@ function Logout() {
             // Even if logout API fails, clearing the tokens and redirecting to the login page
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
+            localStorage.setItem("islogged","false");
             delete axiosInstance.defaults.headers["Authorization"];
 
             navigate("/");

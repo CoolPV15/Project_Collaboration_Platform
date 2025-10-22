@@ -18,7 +18,8 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework import routers
 from rest_framework_simplejwt import views as jwt_views
-from signin import views
+from accounts import views as user_views
+from projects import views as project_views
 '''
 Auther: Pranav Singh
 '''
@@ -27,7 +28,10 @@ Auther: Pranav Singh
 A router for generating the URL patterns for the Registration viewsets
 '''
 router = routers.DefaultRouter()
-router.register(r'accounts',views.RegistrationView,'accounts')
+router.register(r'accounts',user_views.RegistrationView,'accounts')
+router.register(r'projectleads',project_views.ProjectLeadView,'projectleads')
+router.register(r'projects',project_views.ProjectsDisplayView,"projects")
+
 
 '''
 urlpatterns that include endpoints for the jwt token authentication, and paths from other apps
@@ -36,7 +40,7 @@ urlpatterns = [
     path('api/token/',jwt_views.TokenObtainPairView.as_view()),
     path('api/token/refresh/',jwt_views.TokenRefreshView.as_view()),
     path('api/token/verify/',jwt_views.TokenVerifyView.as_view()),
-    path('api/accounts/',include('signin.urls')),
+    path('api/accounts/',include('accounts.urls')),
     path('admin/', admin.site.urls),
-    path('api/',include(router.urls))
+    path('api/',include(router.urls)),
 ]
