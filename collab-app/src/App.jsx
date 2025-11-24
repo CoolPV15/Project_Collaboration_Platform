@@ -12,7 +12,6 @@ function App() {
     Using Routers for efficient navigation between different web pages in the website
     */}
 
-
   return(
     <>
     <Router>

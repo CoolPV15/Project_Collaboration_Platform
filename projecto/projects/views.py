@@ -1,49 +1,269 @@
+"""
+Django REST Framework views for managing projects, join requests, team members,
+and request rejections. These endpoints handle project creation, listing,
+filtering, join request submission, approval, and rejection workflows.
+
+Author: Pranav Singh
+"""
+
 from django.shortcuts import render
 from rest_framework import viewsets
-from .serializers import ProjectLeadCreateSerializer, ProjectLeadSerializer, ProjectDisplaySerializer
-from .models import ProjectLead
+from .serializers import (
+    ProjectLeadCreateSerializer,
+    ProjectLeadSerializer,
+    ProjectDisplaySerializer,
+    ProjectRequestCreateSerializer,
+    ProjectRequestSerializer,
+    ProjectMemberCreateSerializer,
+    ProjectRejectedCreateSerializer,
+)
+from .models import ProjectLead, ProjectRequest, ProjectMembers, ProjectRequestRejected
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
+
 class ProjectLeadView(viewsets.ModelViewSet):
+    """
+    Handles CRUD operations for projects created by users (team leads).
+
+    Endpoints:
+        - POST /api/projectleads/ → create a new project.
+        - GET /api/projectleads/?email=<email> → list projects owned by a user.
+
+    serializer_class: ProjectLeadCreateSerializer
+    queryset: All ProjectLead objects
+    """
+
     serializer_class = ProjectLeadCreateSerializer
     queryset = ProjectLead.objects.all()
 
     def create(self, request, *args, **kwargs):
+        """
+        Create a new project owned by a user.
+
+        Parameters:
+            request (Request): Incoming HTTP request containing project data.
+
+        Returns:
+            Response: Created project data or validation errors.
+        """
         data = request.data
         serializer = ProjectLeadCreateSerializer(data=data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors,status = status.HTTP_400_BAD_REQUEST)
-        
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         project = serializer.create(serializer.validated_data)
         project = ProjectLeadSerializer(project)
 
-        return Response(project.data,status.HTTP_201_CREATED)
+        return Response(project.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        """
+        Filter projects created by a specific user using their email.
+
+        Query Params:
+            email (str): Email of the project owner.
+
+        Returns:
+            QuerySet of ProjectLead
+        """
+        queryset = ProjectLead.objects.all()
+        email = self.request.query_params.get("email")
+
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                queryset = queryset.filter(owner=user)
+            except User.DoesNotExist:
+                pass
+
+        return queryset
+
 
 class ProjectsDisplayView(viewsets.ModelViewSet):
+    """
+    Displays projects available to other users (not owned by them).
+
+    Supports filtering by:
+        - Frontend requirement
+        - Backend requirement
+
+    Useful for showing the "Available Projects" list in the UI.
+    """
+
     serializer_class = ProjectDisplaySerializer
     queryset = ProjectLead.objects.all()
 
     def get_queryset(self):
+        """
+        Filter projects based on user email and technology requirements.
+
+        Query Params:
+            email (str): Exclude projects owned by this user.
+            frontend (str: "true"/"false"): Filter frontend-required.
+            backend (str: "true"/"false"): Filter backend-required.
+
+        Returns:
+            QuerySet of ProjectLead
+        """
         queryset = ProjectLead.objects.all()
         email = self.request.query_params.get("email")
         frontend = self.request.query_params.get("frontend")
         backend = self.request.query_params.get("backend")
-        
+
         if email:
             try:
                 user = User.objects.get(email=email)
                 queryset = queryset.exclude(owner=user)
-            except:
+            except User.DoesNotExist:
                 pass
 
-        if(frontend=="true"):
-            queryset = queryset.filter(frontend=True)
-        if(backend=="true"):
-            queryset = queryset.filter(backend=True)
+        if frontend == "true" and backend == "true":
+            return queryset
+        elif frontend == "true":
+            return queryset.filter(frontend=True)
+        elif backend == "true":
+            return queryset.filter(backend=True)
 
         return queryset
+
+
+class ProjectRequestView(viewsets.ModelViewSet):
+    """
+    Handles join request creation submitted by users.
+
+    endpoint:
+        POST /api/projectrequests/
+    """
+
+    serializer_class = ProjectRequestCreateSerializer
+    queryset = ProjectRequest.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        """
+        Submit a join request for a project.
+
+        Parameters:
+            request (Request): User request containing join request details.
+
+        Returns:
+            Response: Created join request or validation errors.
+        """
+        data = request.data
+        serializer = ProjectRequestCreateSerializer(data=data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        new_request = serializer.create(serializer.validated_data)
+        new_request = ProjectRequestCreateSerializer(new_request)
+
+        return Response(new_request.data, status=status.HTTP_201_CREATED)
+
+
+class ProjectRequestDisplayView(viewsets.ModelViewSet):
+    """
+    Displays all join requests for a given project owned by a team lead.
+
+    endpoint:
+        GET /api/projectrequestsdisplay/?email=<leadEmail>&projectname=<name>
+    """
+
+    serializer_class = ProjectRequestSerializer
+    queryset = ProjectRequest.objects.all()
+
+    def get_queryset(self):
+        """
+        Fetch join requests for a specific project owned by a user.
+
+        Query Params:
+            email (str): Owner email.
+            projectname (str): Name of project.
+
+        Returns:
+            QuerySet of ProjectRequest
+        """
+        queryset = ProjectRequest.objects.all()
+        email = self.request.query_params.get("email")
+        projectname = self.request.query_params.get("projectname")
+
+        if email and projectname:
+            try:
+                user = User.objects.get(email=email)
+                project = ProjectLead.objects.get(owner=user, projectname=projectname)
+                queryset = queryset.filter(project=project)
+            except (User.DoesNotExist, ProjectLead.DoesNotExist):
+                pass
+
+        return queryset
+
+
+class ProjectMembersView(viewsets.ModelViewSet):
+    """
+    Handles adding accepted members to projects.
+
+    endpoint:
+        POST /api/projectmembers/
+    """
+
+    serializer_class = ProjectMemberCreateSerializer
+    queryset = ProjectMembers.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        """
+        Add a member to a project after their request is approved.
+
+        Parameters:
+            request (Request): Contains owner email, applicant email, and project name.
+
+        Returns:
+            Response: Newly created ProjectMember record.
+        """
+        data = request.data
+        serializer = ProjectMemberCreateSerializer(data=data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        new_member = serializer.create(serializer.validated_data)
+        new_member = ProjectMemberCreateSerializer(new_member)
+
+        return Response(new_member.data, status=status.HTTP_201_CREATED)
+
+
+class ProjectRejectedView(viewsets.ModelViewSet):
+    """
+    Handles storing rejected join requests.
+
+    endpoint:
+        POST /api/projectreject/
+    """
+
+    serializer_class = ProjectRejectedCreateSerializer
+    queryset = ProjectRequestRejected.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        """
+        Log a rejected project join request.
+
+        Parameters:
+            request (Request): Includes owner email, applicant email, and project name.
+
+        Returns:
+            Response: Created rejection record.
+        """
+        data = request.data
+        serializer = ProjectRejectedCreateSerializer(data=data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        rejected_request = serializer.create(serializer.validated_data)
+        rejected_request = ProjectRejectedCreateSerializer(rejected_request)
+
+        return Response(rejected_request.data, status=status.HTTP_201_CREATED)

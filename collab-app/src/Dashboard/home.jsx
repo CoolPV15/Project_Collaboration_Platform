@@ -1,3 +1,13 @@
+/**
+ * @file home.jsx
+ * @description 
+ * Main dashboard component for authenticated users. It serves as the central navigation hub
+ * allowing users to create new teams, join existing ones, and manage their current teams.
+ * The component also handles authentication verification, token-based redirection, and 
+ * user data retrieval via the backend API.
+ * @author Pranav Singh
+ */
+
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Interceptors/axiosInstance";
@@ -6,33 +16,71 @@ import CreateTeam from "./createteam.jsx";
 import JoinTeam from "./jointeam.jsx";
 import MyTeams from "./myteams.jsx";
 import { AuthContext } from "../context/AuthProvider.jsx";
+import {
+  Users,
+  PlusCircle,
+  LogOut,
+  UserPlus,
+  Layers,
+  Clock,
+} from "lucide-react";
 
-/* Author: Pranav Singh */
+/**
+ * Home Component
+ * --------------
+ * Acts as the main landing page for authenticated users after login.
+ * Provides navigation to different project-related functionalities through
+ * a sidebar — including creating, joining, and managing teams.
+ *
+ * Features:
+ *  - Validates authentication tokens and redirects unauthorized users.
+ *  - Displays user information and activity stats.
+ *  - Renders subcomponents dynamically based on the selected sidebar tab.
+ */
 
 function Home() {
+  /** --------------------------- Context and Navigation --------------------------- */
+  // Accessing authentication data and user login function from AuthContext.
   const { user, loginUser } = useContext(AuthContext);
-  const [activeTab, setActiveTab] = useState("create");
+
+  // React Router navigation hook.
   const navigate = useNavigate();
 
+  /** --------------------------- State Management --------------------------- */
+  // Tracks which sidebar tab is currently active: "create", "join", or "teams".
+  const [activeTab, setActiveTab] = useState("create");
+
+  /** ------------------------------------------------------------------------
+   * @function useEffect (Authentication Check)
+   * @description Checks for the presence of a valid access token on component mount.
+   *              If no token exists, the user is redirected to the login page.
+   *              If a token exists, it fetches authenticated user details.
+   * ------------------------------------------------------------------------ */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
 
     if (!token) {
       navigate("/");
+      localStorage.setItem("islogged", false);
     } else {
       (async () => {
         try {
           const { data } = await axiosInstance.get("accounts/home/");
           loginUser(data);
-          console.log(data);
         } catch (error) {
           console.log("Not Authorized");
+          localStorage.setItem("islogged", false);
           navigate("/");
         }
       })();
     }
   }, []);
 
+  /** ------------------------------------------------------------------------
+   * @function useEffect (Storage Listener)
+   * @description Listens for changes in localStorage to automatically
+   *              redirect the user when logged out from another tab or window.
+   * ------------------------------------------------------------------------ */
   useEffect(() => {
     const handleStorageChange = (event) => {
       if (event.key === "islogged" && event.newValue === "false") {
@@ -44,67 +92,87 @@ function Home() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  /** --------------------------- Dashboard Stats --------------------------- */
+  const stats = [
+    { label: "Teams Created", value: 0, icon: <PlusCircle className="text-blue-500" /> },
+    { label: "Teams Joined", value: 0, icon: <Users className="text-green-500" /> },
+    { label: "Pending Requests", value: 0, icon: <Clock className="text-yellow-500" /> },
+  ];
+
+  /** --------------------------- JSX Structure --------------------------- */
   return (
     <div className="h-screen flex bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg flex flex-col">
-        <h2 className="text-2xl font-bold text-center py-6 border-b">
-          PROJECTO
-        </h2>
-        <nav className="flex-1 px-4 py-6 space-y-3">
-          <button
+
+      {/* --------------------------- Sidebar Section --------------------------- */}
+      <div className="w-72 backdrop-blur-lg bg-white/70 shadow-xl border-r border-gray-200 flex flex-col rounded-r-3xl">
+        {/* App Title */}
+        <div className="flex items-center justify-center py-8 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800">PROJECTO</h2>
+        </div>
+
+        {/* Sidebar Navigation Buttons */}
+        <nav className="flex-1 px-6 py-8 space-y-3">
+          <SidebarButton
+            icon={<PlusCircle size={20} />}
+            label="Create a Team"
+            active={activeTab === "create"}
             onClick={() => setActiveTab("create")}
-            className={`w-full text-left px-4 py-2 rounded-lg font-medium transition ${
-              activeTab === "create"
-                ? "bg-blue-500 text-white shadow-md"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-          >
-            Create a Team
-          </button>
-          <button
+          />
+          <SidebarButton
+            icon={<UserPlus size={20} />}
+            label="Join a Team"
+            active={activeTab === "join"}
             onClick={() => setActiveTab("join")}
-            className={`w-full text-left px-4 py-2 rounded-lg font-medium transition ${
-              activeTab === "join"
-                ? "bg-blue-500 text-white shadow-md"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-          >
-            Join a Team
-          </button>
-          <button
+          />
+          <SidebarButton
+            icon={<Layers size={20} />}
+            label="My Teams"
+            active={activeTab === "teams"}
             onClick={() => setActiveTab("teams")}
-            className={`w-full text-left px-4 py-2 rounded-lg font-medium transition ${
-              activeTab === "teams"
-                ? "bg-blue-500 text-white shadow-md"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-          >
-            My Teams
-          </button>
+          />
         </nav>
 
-        <div className="border-t p-4">
-          <Logout />
+        {/* Logout Section */}
+        <div className="border-t border-gray-200 p-6 mt-auto">
+          <div className="flex items-center justify-between bg-gray-100 hover:bg-gray-200 transition rounded-xl px-4 py-3">
+            <Logout />
+            <LogOut className="text-gray-700" size={20} />
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-8 overflow-y-auto">
-        {/* Compact Horizontal Profile Card */}
+      {/* --------------------------- Main Content Section --------------------------- */}
+      <div className="flex-1 p-8 overflow-y-auto relative">
+        {/* Background Gradient Decoration */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl -z-10 transform -translate-y-20 -translate-x-20"></div>
+
+        {/* --------------------------- Header Section --------------------------- */}
         {user && (
-          <div className="flex justify-end mb-8">
-            <div className="bg-white rounded-2xl border border-gray-300 shadow-sm hover:shadow-md transition p-5 flex items-center space-x-4 w-[420px]">
-              {/* Profile Image */}
+          <div className="flex gap-4 mb-10 items-stretch justify-between w-full">
+            {/* User Statistics */}
+            <div className="flex gap-4 items-stretch flex-1">
+              {stats.map((stat, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col items-center justify-center hover:shadow-md transition flex-1"
+                >
+                  <div className="mb-2">{stat.icon}</div>
+                  <h3 className="text-xl font-bold text-gray-800">{stat.value}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* User Profile Card */}
+            <div className="bg-white rounded-2xl border border-gray-300 shadow-sm hover:shadow-md transition p-5 flex items-center space-x-4 w-[420px] flex-shrink-0">
               <div className="flex-shrink-0">
                 <img
                   className="w-14 h-14 rounded-full object-cover border border-gray-200"
                   src="https://cdn-icons-png.flaticon.com/512/847/847969.png"
-                  alt="No user"
+                  alt="User Avatar"
                 />
               </div>
 
-              {/* User Details */}
               <div className="flex flex-col flex-grow">
                 <p className="font-semibold text-lg text-gray-800">
                   {user.firstname} {user.lastname}
@@ -128,12 +196,39 @@ function Home() {
           </div>
         )}
 
-        {/* Active Tab Content */}
+        {/* --------------------------- Dynamic Content Rendering --------------------------- */}
         {activeTab === "create" && <CreateTeam />}
         {activeTab === "join" && <JoinTeam />}
         {activeTab === "teams" && <MyTeams />}
       </div>
     </div>
+  );
+}
+
+/**
+ * SidebarButton Component
+ * -----------------------
+ * Reusable button component for the sidebar navigation.
+ *
+ * @param {Object} props - Component props
+ * @param {JSX.Element} props.icon - Icon displayed alongside the label
+ * @param {string} props.label - Text label for the button
+ * @param {boolean} props.active - Indicates whether the button is currently active
+ * @param {Function} props.onClick - Callback triggered when the button is clicked
+ */
+function SidebarButton({ icon, label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+        active
+          ? "bg-blue-600 text-white shadow-md scale-[1.02]"
+          : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
   );
 }
 
