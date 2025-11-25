@@ -16,6 +16,9 @@ from .serializers import (
     ProjectRequestSerializer,
     ProjectMemberCreateSerializer,
     ProjectRejectedCreateSerializer,
+    JoinedProjectsSerializer,
+    ProjectMembersDescription,
+    PendingProjectRequests
 )
 from .models import ProjectLead, ProjectRequest, ProjectMembers, ProjectRequestRejected
 from rest_framework.response import Response
@@ -124,14 +127,24 @@ class ProjectsDisplayView(viewsets.ModelViewSet):
                 pass
 
         if frontend == "true" and backend == "true":
-            return queryset
+            pass
         elif frontend == "true":
-            return queryset.filter(frontend=True)
+            queryset = queryset.filter(frontend=True)
         elif backend == "true":
-            return queryset.filter(backend=True)
+            queryset = queryset.filter(backend=True)
+        
+        projectsrequest = ProjectRequest.objects.all()
+        projectsrequest = projectsrequest.filter(member=user).values_list("project",flat=True)
+
+        projectsjoined = ProjectMembers.objects.all()
+        projectsjoined = projectsjoined.filter(member=user).values_list("project",flat=True)
+
+        queryset = queryset.exclude(id__in = projectsrequest)
+        queryset = queryset.exclude(id__in = projectsjoined)
+
+        print(queryset.query)
 
         return queryset
-
 
 class ProjectRequestView(viewsets.ModelViewSet):
     """
@@ -164,7 +177,18 @@ class ProjectRequestView(viewsets.ModelViewSet):
         new_request = ProjectRequestCreateSerializer(new_request)
 
         return Response(new_request.data, status=status.HTTP_201_CREATED)
+        
+    def get_queryset(self):
+        queryset = ProjectRequest.objects.all()
+        email = self.request.query_params.get("email")
 
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                queryset = queryset.filter(member=user)
+            except:
+                pass
+        return queryset
 
 class ProjectRequestDisplayView(viewsets.ModelViewSet):
     """
@@ -267,3 +291,56 @@ class ProjectRejectedView(viewsets.ModelViewSet):
         rejected_request = ProjectRejectedCreateSerializer(rejected_request)
 
         return Response(rejected_request.data, status=status.HTTP_201_CREATED)
+
+class JoinedProjectDisplayView(viewsets.ModelViewSet):
+    serializer_class = JoinedProjectsSerializer
+    queryset = ProjectMembers.objects.all()
+
+    def get_queryset(self):
+        queryset = ProjectMembers.objects.all()
+        email = self.request.query_params.get("email")
+
+        if(email):
+            try:
+                user = User.objects.get(email=email) 
+                queryset = queryset.filter(member=user)
+            except:
+                pass
+
+        return queryset
+    
+class ProjectMembersDisplayView(viewsets.ModelViewSet):
+    serializer_class = ProjectMembersDescription
+    queryset = ProjectMembers.objects.all()
+
+    def get_queryset(self):
+        queryset = ProjectMembers.objects.all()
+        email = self.request.query_params.get("email")
+        projectname = self.request.query_params.get("projectname")
+
+        if email and projectname:
+            try:
+                user = User.objects.get(email=email)
+                project = ProjectLead.objects.get(owner=user,projectname=projectname)
+                queryset = ProjectMembers.objects.filter(project=project)
+            except:
+                pass
+        
+        return queryset
+    
+class PendingProjectsView(viewsets.ModelViewSet):
+    serializer_class = PendingProjectRequests
+    queryset = ProjectRequest.objects.all()
+
+    def get_queryset(self):
+        queryset = ProjectRequest.objects.all()
+        email = self.request.query_params.get("email")
+
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                queryset = ProjectRequest.objects.filter(member=user)
+            except:
+                pass
+        
+        return queryset

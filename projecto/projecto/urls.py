@@ -35,6 +35,9 @@ router.register(r'projectrequests',project_views.ProjectRequestView,"projectrequ
 router.register(r'projectrequestsdisplay',project_views.ProjectRequestDisplayView,"projectrequestdisplay")
 router.register(r'projectmembers',project_views.ProjectMembersView,"projectmembersview")
 router.register(r'projectreject',project_views.ProjectRejectedView,"projectrejectedview")
+router.register(r'joinedprojects',project_views.JoinedProjectDisplayView,"joinedprojects")
+router.register(r'projectmembersdisplay',project_views.ProjectMembersDisplayView,"projectmembersdisplay")
+router.register(r'pendingprojects',project_views.PendingProjectsView,"pendingprojects")
 '''
 urlpatterns that include endpoints for the jwt token authentication, and paths from other apps
 '''

@@ -329,3 +329,34 @@ class ProjectRejectedCreateSerializer(serializers.ModelSerializer):
         )
 
         return new_reject
+
+class JoinedProjectsSerializer(serializers.ModelSerializer):
+    projectname = serializers.CharField(source="project.projectname",read_only=True)
+    description = serializers.CharField(source="project.description",read_only=True)
+    owner_email = serializers.EmailField(source="project.owner.email",read_only=True)
+    owner_fname = serializers.CharField(source="project.owner.firstname",read_only=True)
+    owner_lname = serializers.CharField(source="project.owner.lastname",read_only=True)
+
+    class Meta:
+        model = ProjectMembers
+        fields = ["projectname","description","owner_email","owner_fname","owner_lname"]
+
+class ProjectMembersDescription(serializers.ModelSerializer):
+    member_email = serializers.CharField(source="member.email")
+    member_fname = serializers.CharField(source="member.firstname")
+    member_lname = serializers.CharField(source="member.lastname")
+
+    class Meta:
+        model = ProjectMembers
+        fields = ["member_email","member_fname","member_lname"]
+
+class PendingProjectRequests(serializers.ModelSerializer):
+    projectname = serializers.CharField(source="project.projectname",read_only=True)
+    description = serializers.CharField(source="project.description",read_only=True)
+    owner_email = serializers.EmailField(source="project.owner.email",read_only=True)
+    owner_fname = serializers.CharField(source="project.owner.firstname",read_only=True)
+    owner_lname = serializers.CharField(source="project.owner.lastname",read_only=True)
+
+    class Meta:
+        model = ProjectRequest
+        fields = ["projectname","description","message","owner_email","owner_fname","owner_lname"]
