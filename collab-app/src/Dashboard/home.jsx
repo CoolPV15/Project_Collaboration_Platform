@@ -143,7 +143,6 @@ function Home() {
 
       {/* --------------------------- Main Content Section --------------------------- */}
       <div className="flex-1 p-8 overflow-y-auto relative">
-        {/* Background Gradient Decoration */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl -z-10 transform -translate-y-20 -translate-x-20"></div>
 
         {/* --------------------------- Header Section --------------------------- */}

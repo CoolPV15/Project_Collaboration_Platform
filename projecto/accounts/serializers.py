@@ -26,7 +26,7 @@ class UsersCreateSerializer(serializers.ModelSerializer):
 
     Responsibilities:
         - Validate required registration fields.
-        - Hash the user’s password (handled inside UserManager).
+        - Hash the user's password (handled inside UserManager).
         - Create and return a new Users instance.
 
     Meta:

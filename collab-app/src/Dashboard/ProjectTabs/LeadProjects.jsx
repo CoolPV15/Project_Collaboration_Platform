@@ -1,18 +1,15 @@
 /**
  * @file LeadProjects.jsx
- * @description 
- * Displays all projects created by the authenticated user (team lead).
- * On expanding a project, it fetches:
- *  - pending join requests (projectrequestsdisplay)
- *  - team members (projectmembersdisplay)
- * Lead can Accept/Reject join requests.
+ * @description
+ * React component that displays all projects created by the authenticated user (Team Lead).
  * 
- * Fully aligned with backend structure:
- *  - projectmembersdisplay → [{ member_email, member_fname, member_lname }]
- *  - projectrequestsdisplay → [{ email, fname, lname, message, id }]
- * 
- * @author
- * Pranav Singh
+ * Features:
+ * - Fetches all projects owned by the logged-in user.
+ * - Expands/collapses project cards to show join requests and current members.
+ * - Allows the Team Lead to Accept/Reject join requests.
+ * - Displays project members with their basic details.
+ *
+ * @author Pranav Singh
  */
 
 import { useEffect, useState, useContext } from "react";
@@ -30,6 +27,19 @@ import {
   UserX,
 } from "lucide-react";
 
+/**
+ * @component LeadProjects
+ * @description
+ * Main functional component that renders all projects created by the authenticated user.
+ * Handles:
+ * - Fetching lead-created projects
+ * - Fetching join requests for each project
+ * - Fetching members for each project
+ * - Accept/Reject actions
+ * - UI expand/collapse of project cards
+ *
+ * @returns {JSX.Element} Rendered project list with interactions.
+ */
 function LeadProjects() {
   const { user } = useContext(AuthContext);
 
@@ -44,12 +54,21 @@ function LeadProjects() {
   const [requestLoading, setRequestLoading] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
 
-  // -------------------------------
-  // Fetch all projects created by user
-  // -------------------------------
+  /**
+   * @function useEffect
+   * @description
+   * Fetches all projects created by the authenticated user using their email ID.
+   * Runs whenever `user` is available.
+   */
   useEffect(() => {
     if (!user) return;
 
+    /**
+     * @async
+     * @function fetchLeadProjects
+     * @description Calls backend API to retrieve all projects created by the team lead.
+     * @returns {Promise<void>}
+     */
     const fetchLeadProjects = async () => {
       try {
         setLoading(true);
@@ -70,9 +89,13 @@ function LeadProjects() {
     fetchLeadProjects();
   }, [user]);
 
-  // -------------------------------
-  // Fetch join requests
-  // -------------------------------
+  /**
+   * @async
+   * @function fetchRequests
+   * @param {string} projectname - The project for which join requests must be fetched.
+   * @description
+   * Retrieves all pending join requests for the given project.
+   */
   const fetchRequests = async (projectname) => {
     setRequestLoading(true);
 
@@ -96,9 +119,12 @@ function LeadProjects() {
     }
   };
 
-  // -------------------------------
-  // Fetch current team members
-  // -------------------------------
+  /**
+   * @async
+   * @function fetchMembers
+   * @param {string} projectname - Name of the project.
+   * @description Retrieves all currently approved team members for the project.
+   */
   const fetchMembers = async (projectname) => {
     setMembersLoading(true);
 
@@ -122,9 +148,12 @@ function LeadProjects() {
     }
   };
 
-  // -------------------------------
-  // Expand/collapse project card
-  // -------------------------------
+  /**
+   * @function handleToggle
+   * @param {string} projectname - Name of the project clicked by the user.
+   * @description
+   * Expands/collapses a project card and loads requests and members when expanded.
+   */
   const handleToggle = (projectname) => {
     if (expandedProject === projectname) {
       setExpandedProject(null);
@@ -137,9 +166,17 @@ function LeadProjects() {
     }
   };
 
-  // -------------------------------
-  // Accept Request
-  // -------------------------------
+  /**
+   * @async
+   * @function handleAccept
+   * @param {string} email - Email of requester
+   * @param {string} projectname - Name of the project
+   * @param {number} id - Project ID for deletion
+   * @description
+   * Approves a join request by:
+   * - Adding member to projectmembers table
+   * - Deleting the pending request from backend
+   */
   const handleAccept = async (email, projectname, id) => {
     setRequestLoading(true);
 
@@ -150,7 +187,6 @@ function LeadProjects() {
         projectname,
       });
 
-      // delete request from backend
       await axios.delete(`http://127.0.0.1:8000/api/projectrequests/${id}/`);
 
       fetchRequests(projectname);
@@ -162,9 +198,17 @@ function LeadProjects() {
     }
   };
 
-  // -------------------------------
-  // Reject Request
-  // -------------------------------
+  /**
+   * @async
+   * @function handleReject
+   * @param {string} email - Email of requester
+   * @param {string} projectname - Name of the project
+   * @param {number} id - Project ID for deletion
+   * @description
+   * Rejects a join request by:
+   * - Adding requester to rejected list
+   * - Deleting their pending request
+   */
   const handleReject = async (email, projectname, id) => {
     setRequestLoading(true);
 
@@ -185,9 +229,6 @@ function LeadProjects() {
     }
   };
 
-  // ----------------------------------------------
-  // LOADING STATE
-  // ----------------------------------------------
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-gray-500">
@@ -197,9 +238,6 @@ function LeadProjects() {
     );
   }
 
-  // ----------------------------------------------
-  // NO PROJECTS
-  // ----------------------------------------------
   if (leadProjects.length === 0) {
     return (
       <div className="flex flex-col justify-center items-center text-gray-500 py-10">
@@ -209,9 +247,6 @@ function LeadProjects() {
     );
   }
 
-  // ----------------------------------------------
-  // MAIN RENDER
-  // ----------------------------------------------
   return (
     <div className="space-y-6">
       {leadProjects.map((p) => {
@@ -222,7 +257,7 @@ function LeadProjects() {
             key={projectname}
             className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-6"
           >
-            {/* Header */}
+            {/* ----------------------------  PROJECT HEADER  ---------------------------- */}
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => handleToggle(projectname)}
@@ -241,10 +276,11 @@ function LeadProjects() {
               )}
             </div>
 
-            {/* Expanded content */}
+            {/* ---------------------------- EXPANDED PROJECT DETAILS ---------------------------- */}
             {expandedProject === projectname && (
               <div className="mt-6 border-t pt-6 space-y-8">
-                {/* Requests */}
+
+                {/*---------------------------- PENDING REQUESTS ----------------------------*/}
                 <div>
                   <h4 className="text-md font-semibold text-indigo-700 mb-3">
                     Pending Join Requests
@@ -307,7 +343,7 @@ function LeadProjects() {
                   )}
                 </div>
 
-                {/* Team Members */}
+                {/*---------------------------- CURRENT MEMBERS ----------------------------*/}
                 <div>
                   <h4 className="text-md font-semibold text-indigo-700 mb-3">
                     Current Team Members
@@ -334,13 +370,16 @@ function LeadProjects() {
                             <p className="font-medium text-gray-800">
                               {m.member_fname} {m.member_lname}
                             </p>
-                            <p className="text-sm text-gray-500">{m.member_email}</p>
+                            <p className="text-sm text-gray-500">
+                              {m.member_email}
+                            </p>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
+
               </div>
             )}
           </div>

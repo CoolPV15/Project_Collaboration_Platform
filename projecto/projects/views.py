@@ -36,9 +36,6 @@ class ProjectLeadView(viewsets.ModelViewSet):
     Endpoints:
         - POST /api/projectleads/ → create a new project.
         - GET /api/projectleads/?email=<email> → list projects owned by a user.
-
-    serializer_class: ProjectLeadCreateSerializer
-    queryset: All ProjectLead objects
     """
 
     serializer_class = ProjectLeadCreateSerializer
@@ -92,11 +89,12 @@ class ProjectsDisplayView(viewsets.ModelViewSet):
     """
     Displays projects available to other users (not owned by them).
 
+    Endpoints:
+        GET /api/projects/?email=<email>&?frontend=<true/false>&?backend=<true/false>
+
     Supports filtering by:
         - Frontend requirement
         - Backend requirement
-
-    Useful for showing the "Available Projects" list in the UI.
     """
 
     serializer_class = ProjectDisplaySerializer
@@ -142,8 +140,6 @@ class ProjectsDisplayView(viewsets.ModelViewSet):
         queryset = queryset.exclude(id__in = projectsrequest)
         queryset = queryset.exclude(id__in = projectsjoined)
 
-        print(queryset.query)
-
         return queryset
 
 class ProjectRequestView(viewsets.ModelViewSet):
@@ -177,19 +173,7 @@ class ProjectRequestView(viewsets.ModelViewSet):
         new_request = ProjectRequestCreateSerializer(new_request)
 
         return Response(new_request.data, status=status.HTTP_201_CREATED)
-        
-    def get_queryset(self):
-        queryset = ProjectRequest.objects.all()
-        email = self.request.query_params.get("email")
-
-        if email:
-            try:
-                user = User.objects.get(email=email)
-                queryset = queryset.filter(member=user)
-            except:
-                pass
-        return queryset
-
+    
 class ProjectRequestDisplayView(viewsets.ModelViewSet):
     """
     Displays all join requests for a given project owned by a team lead.
@@ -293,27 +277,62 @@ class ProjectRejectedView(viewsets.ModelViewSet):
         return Response(rejected_request.data, status=status.HTTP_201_CREATED)
 
 class JoinedProjectDisplayView(viewsets.ModelViewSet):
+    """
+    Displays all projects joined by a specific user.
+
+    endpoint:
+        GET /api/joinedprojects/?email=<user_email>
+    """
+
     serializer_class = JoinedProjectsSerializer
     queryset = ProjectMembers.objects.all()
 
     def get_queryset(self):
+        """
+        Filter joined projects based on email.
+
+        Parameters:
+            email (str): User email provided as a query parameter.
+
+        Returns:
+            QuerySet: Projects the user has joined.
+        """
         queryset = ProjectMembers.objects.all()
         email = self.request.query_params.get("email")
 
-        if(email):
+        if email:
             try:
-                user = User.objects.get(email=email) 
+                user = User.objects.get(email=email)
                 queryset = queryset.filter(member=user)
             except:
                 pass
 
         return queryset
-    
+
+
+
 class ProjectMembersDisplayView(viewsets.ModelViewSet):
+    """
+    Returns all members of a specific project for a given owner.
+
+    endpoint:
+        GET /api/projectmembersdisplay/?email=<owner_email>&projectname=<project_name>
+    """
+
     serializer_class = ProjectMembersDescription
     queryset = ProjectMembers.objects.all()
 
     def get_queryset(self):
+        """
+        Get members of a project using owner email and project name.
+
+        Parameters:
+            email (str): Email of the project owner.
+            projectname (str): Name of the project.
+
+        Returns:
+            QuerySet: List of members in the project.
+        """
         queryset = ProjectMembers.objects.all()
         email = self.request.query_params.get("email")
         projectname = self.request.query_params.get("projectname")
@@ -321,18 +340,34 @@ class ProjectMembersDisplayView(viewsets.ModelViewSet):
         if email and projectname:
             try:
                 user = User.objects.get(email=email)
-                project = ProjectLead.objects.get(owner=user,projectname=projectname)
+                project = ProjectLead.objects.get(owner=user, projectname=projectname)
                 queryset = ProjectMembers.objects.filter(project=project)
             except:
                 pass
-        
+
         return queryset
-    
+
 class PendingProjectsView(viewsets.ModelViewSet):
+    """
+    Displays pending project join requests for a user.
+
+    endpoint:
+        GET /api/pendingprojects/?email=<user_email>
+    """
+
     serializer_class = PendingProjectRequests
     queryset = ProjectRequest.objects.all()
 
     def get_queryset(self):
+        """
+        Filter pending join requests based on user email.
+
+        Parameters:
+            email (str): Email of the user.
+
+        Returns:
+            QuerySet: Pending project join requests for the user.
+        """
         queryset = ProjectRequest.objects.all()
         email = self.request.query_params.get("email")
 
@@ -342,5 +377,5 @@ class PendingProjectsView(viewsets.ModelViewSet):
                 queryset = ProjectRequest.objects.filter(member=user)
             except:
                 pass
-        
+
         return queryset

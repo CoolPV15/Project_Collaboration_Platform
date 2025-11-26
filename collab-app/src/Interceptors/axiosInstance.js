@@ -1,6 +1,6 @@
 import axios from "axios";
 {/*Author: Pranav Singh*/}
-// Create an axios instance with default config
+
 const axiosInstance = axios.create({
   baseURL: "http://127.0.0.1:8000/api/", // Base API URL
   headers: {

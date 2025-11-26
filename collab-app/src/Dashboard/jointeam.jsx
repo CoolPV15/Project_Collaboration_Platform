@@ -14,7 +14,7 @@
  * - Error handling via a custom ErrorToast component
  *
  * @module JoinTeam
- * @author Pranav
+ * @author Pranav Singh
  */
 
 import React, { useEffect, useContext, useState } from "react";

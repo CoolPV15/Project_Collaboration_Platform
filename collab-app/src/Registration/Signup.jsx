@@ -12,8 +12,7 @@
  *  - `RightPane`: Handles the sign-up form, state management, and API integration.
  *  - `SignUp`: Wrapper component that combines the left informational pane and the signup form.
  * 
- * @author
- * Pranav Singh
+ * @author Pranav Singh
  */
 
 import { useState } from "react";
@@ -53,8 +52,8 @@ function RightPane() {
    * Depending on the `prof` field, sets the user's proficiency type
    * (Frontend, Backend, or Both).
    * 
-   * On success -> clears form and displays success toast.  
-   * On failure -> displays error toast.
+   * On success - clears form and displays success toast.  
+   * On failure - displays error toast.
    * ------------------------------------------------------------------------ */
   const postData = async () => {
     let front = false;

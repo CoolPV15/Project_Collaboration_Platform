@@ -331,32 +331,75 @@ class ProjectRejectedCreateSerializer(serializers.ModelSerializer):
         return new_reject
 
 class JoinedProjectsSerializer(serializers.ModelSerializer):
-    projectname = serializers.CharField(source="project.projectname",read_only=True)
-    description = serializers.CharField(source="project.description",read_only=True)
-    owner_email = serializers.EmailField(source="project.owner.email",read_only=True)
-    owner_fname = serializers.CharField(source="project.owner.firstname",read_only=True)
-    owner_lname = serializers.CharField(source="project.owner.lastname",read_only=True)
+    """
+    Serializer for displaying all projects joined by a user.
+
+    Read-only Fields:
+        projectname (str): Name of the joined project.
+        description (str): Description of the project.
+        owner_email (str): Email of the project owner.
+        owner_fname (str): First name of the project owner.
+        owner_lname (str): Last name of the project owner.
+
+    Returns:
+        Project details with owner information for joined projects.
+    """
+
+    projectname = serializers.CharField(source="project.projectname", read_only=True)
+    description = serializers.CharField(source="project.description", read_only=True)
+    owner_email = serializers.EmailField(source="project.owner.email", read_only=True)
+    owner_fname = serializers.CharField(source="project.owner.firstname", read_only=True)
+    owner_lname = serializers.CharField(source="project.owner.lastname", read_only=True)
 
     class Meta:
         model = ProjectMembers
-        fields = ["projectname","description","owner_email","owner_fname","owner_lname"]
+        fields = ["projectname", "description", "owner_email", "owner_fname", "owner_lname"]
 
 class ProjectMembersDescription(serializers.ModelSerializer):
-    member_email = serializers.CharField(source="member.email")
-    member_fname = serializers.CharField(source="member.firstname")
-    member_lname = serializers.CharField(source="member.lastname")
+    """
+    Serializer for listing members of a project.
+
+    Read-only Fields:
+        member_email (str): Email of the project member.
+        member_fname (str): First name of the project member.
+        member_lname (str): Last name of the project member.
+
+    Returns:
+        Basic details of all members in a project.
+    """
+
+    member_email = serializers.CharField(source="member.email", read_only=True)
+    member_fname = serializers.CharField(source="member.firstname", read_only=True)
+    member_lname = serializers.CharField(source="member.lastname", read_only=True)
 
     class Meta:
         model = ProjectMembers
-        fields = ["member_email","member_fname","member_lname"]
+        fields = ["member_email", "member_fname", "member_lname"]
+
+
 
 class PendingProjectRequests(serializers.ModelSerializer):
-    projectname = serializers.CharField(source="project.projectname",read_only=True)
-    description = serializers.CharField(source="project.description",read_only=True)
-    owner_email = serializers.EmailField(source="project.owner.email",read_only=True)
-    owner_fname = serializers.CharField(source="project.owner.firstname",read_only=True)
-    owner_lname = serializers.CharField(source="project.owner.lastname",read_only=True)
+    """
+    Serializer for displaying pending project join requests made by a user.
+
+    Read-only Fields:
+        projectname (str): Name of the requested project.
+        description (str): Description of the project.
+        message (str): Message sent by the user in the join request.
+        owner_email (str): Email of the project owner.
+        owner_fname (str): First name of the project owner.
+        owner_lname (str): Last name of the project owner.
+
+    Returns:
+        Details of all pending project requests with project and owner info.
+    """
+
+    projectname = serializers.CharField(source="project.projectname", read_only=True)
+    description = serializers.CharField(source="project.description", read_only=True)
+    owner_email = serializers.EmailField(source="project.owner.email", read_only=True)
+    owner_fname = serializers.CharField(source="project.owner.firstname", read_only=True)
+    owner_lname = serializers.CharField(source="project.owner.lastname", read_only=True)
 
     class Meta:
         model = ProjectRequest
-        fields = ["projectname","description","message","owner_email","owner_fname","owner_lname"]
+        fields = ["projectname", "description", "message", "owner_email", "owner_fname", "owner_lname"]

@@ -12,7 +12,7 @@ import { useState } from "react";
 import { Users, Clock, CheckCircle2 } from "lucide-react";
 import PendingProjects from "./ProjectTabs/RequestedProjects.jsx";
 import JoinedProjects from "./ProjectTabs/JoinedProjects.jsx";
-import LeadProjects from "./ProjectTabs/leadprojects.jsx";
+import LeadProjects from "./ProjectTabs/LeadProjects.jsx";
 
 /**
  * MyTeams Component

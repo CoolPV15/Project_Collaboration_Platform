@@ -1,3 +1,13 @@
+/**
+ * @file JoinedProjects.jsx
+ * @description
+ * This component displays all projects that the currently logged-in user has joined.
+ * It allows expanding each project to view its members, fetches data from backend
+ * APIs, and handles loading states, errors, and UI transitions.
+ *
+ * @author Pranav Singh
+ */
+
 import {
   ChevronRight,
   ChevronDown,
@@ -8,6 +18,12 @@ import React, { useEffect, useContext, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthProvider.jsx";
 
+/**
+ * @component JoinedProjects
+ * @description
+ * Main component responsible for fetching the user's joined projects and displaying
+ * them in an expandable card format. Each project card reveals its members on expand.
+ */
 function JoinedProjects() {
   const { user } = useContext(AuthContext);
 
@@ -18,7 +34,11 @@ function JoinedProjects() {
   const [members, setMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(false);
 
-  // Fetch joined projects
+  /**
+   * @function fetchProjects
+   * @description Fetches all projects joined by the logged-in user using their email.
+   * Sets the project list into state and manages loading state.
+   */
   useEffect(() => {
     if (!user) return;
 
@@ -41,7 +61,14 @@ function JoinedProjects() {
     fetchProjects();
   }, [user]);
 
-  // Fetch members for a project
+  /**
+   * @function fetchMembers
+   * @description Fetches all team members belonging to a specific project.
+   *
+   * @param {Object} project - The selected project object.
+   * @param {string} project.owner_email - Owner's email used for backend query.
+   * @param {string} project.projectname - Name of the project to fetch members for.
+   */
   const fetchMembers = async (project) => {
     setMembersLoading(true);
 
@@ -64,6 +91,13 @@ function JoinedProjects() {
     }
   };
 
+  /**
+   * @function handleToggleProject
+   * @description Expands or collapses the project card. If expanded, project
+   * members will be fetched from the backend.
+   *
+   * @param {Object} project - Project to expand or collapse.
+   */
   const handleToggleProject = (project) => {
     if (expandedProject === project.projectname) {
       setExpandedProject(null);
@@ -74,9 +108,6 @@ function JoinedProjects() {
     }
   };
 
-  /* ------------------------------------
-        Loading State
-  ------------------------------------ */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-gray-500">
@@ -85,9 +116,6 @@ function JoinedProjects() {
     );
   }
 
-  /* ------------------------------------
-         No Joined Projects
-  ------------------------------------ */
   if (joinedProjects.length === 0) {
     return (
       <div className="text-center text-gray-500 py-10">
@@ -97,9 +125,6 @@ function JoinedProjects() {
     );
   }
 
-  /* ------------------------------------
-               MAIN UI
-  ------------------------------------ */
   return (
     <div className="space-y-6">
       {joinedProjects.map((project) => (
@@ -107,13 +132,13 @@ function JoinedProjects() {
           key={project.projectname}
           className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-6"
         >
-          {/* Header */}
+          {/* ------------------------------ Project Header ------------------------------ */}
           <div
             className="flex justify-between items-center cursor-pointer"
             onClick={() => handleToggleProject(project)}
           >
             <div className="flex items-start gap-4">
-              {/* Owner Avatar */}
+              {/* Avatar */}
               <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-semibold shadow-sm">
                 {project.owner_fname
                   ? project.owner_fname.charAt(0).toUpperCase()
@@ -145,7 +170,7 @@ function JoinedProjects() {
             )}
           </div>
 
-          {/* Members Section */}
+          {/* ----------------------------- Members Section ------------------------------ */}
           {expandedProject === project.projectname && (
             <div className="mt-6 border-t pt-6">
               {membersLoading ? (
@@ -164,7 +189,6 @@ function JoinedProjects() {
                       className="bg-gradient-to-r from-indigo-50 to-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow transition"
                     >
                       <div className="flex items-center gap-4">
-                        {/* Member Avatar */}
                         <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold shadow-sm">
                           {m.member_fname
                             ? m.member_fname.charAt(0).toUpperCase()

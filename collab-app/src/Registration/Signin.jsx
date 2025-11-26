@@ -10,8 +10,7 @@
  *  - `RightPane`: The main sign-in form logic and UI.
  *  - `Signin`: A wrapper that combines the left informational pane and the right login form.
  * 
- * @author
- * Pranav Singh
+ * @author Pranav Singh
  */
 
 import { useState, useEffect, useContext } from "react";
