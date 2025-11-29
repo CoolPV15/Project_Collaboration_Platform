@@ -10,7 +10,8 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthProvider.jsx";
-import SuccessfulToast from "../toasts/SuccessfulToast.jsx";
+import SuccessToast from "../toasts/SuccessToast.jsx";
+import { useDashboard } from "../context/DashboardContext.jsx";
 import {
   Code2,
   FileText,
@@ -18,10 +19,11 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
+import ErrorToast from "../toasts/ErrorToast.jsx";
 
 /**
- * CreateTeam Component
- * --------------------
+ * @component CreateTeam
+ * @description
  * This component provides a user interface for project leads to create new teams.
  * It allows them to:
  *  - Enter a project name and description.
@@ -32,6 +34,8 @@ import {
 
 function CreateTeam() {
   /** --------------------------- State Management --------------------------- */
+  const { triggerRefresh } = useDashboard();
+  const [refresh, setRefresh] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [need, setNeed] = useState({ frontend: true, backend: true });
@@ -42,6 +46,7 @@ function CreateTeam() {
   // Accessing logged-in user data from global AuthContext
   const { user } = useContext(AuthContext);
 
+
   /** ------------------------------------------------------------------------
    * @function handleProjectDescription
    * @description Updates project description while enforcing a maximum limit of 250 characters.
@@ -50,8 +55,8 @@ function CreateTeam() {
    * ------------------------------------------------------------------------ */
   const handleProjectDescription = (event) => {
     const value = event.target.value;
-    if (value.length > 250) {
-      setError("Project description must not exceed 250 words.");
+    if (value.length > 500) {
+      setError("Project description must not exceed 500 words.");
       return;
     }
     setError("");
@@ -77,6 +82,8 @@ function CreateTeam() {
       await axios.post("http://127.0.0.1:8000/api/projectleads/", project);
       console.log("Project Created Successfully");
       setCreated(true);
+      triggerRefresh();
+      setRefresh(prev => !prev);
     } catch (error) {
       console.error("An error occurred while creating the project:", error);
       setError("An error occurred while creating the project. Please try again.");
@@ -91,8 +98,8 @@ function CreateTeam() {
    * ------------------------------------------------------------------------ */
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (count > 250) {
-      setError("Project description must not exceed 250 words.");
+    if (count > 500) {
+      setError("Project description must not exceed 500 words.");
       return;
     }
     setError("");
@@ -121,12 +128,13 @@ function CreateTeam() {
 
           {/* --------------------------- Project Name Input --------------------------- */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">
+            <label htmlFor="pname" className="block text-gray-700 font-medium mb-2">
               Project Name
             </label>
             <div className="relative">
               <FileText className="absolute left-3 top-2.5 text-gray-400" size={18} />
               <input
+                id="pname"
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
@@ -139,10 +147,11 @@ function CreateTeam() {
 
           {/* --------------------------- Project Description Input --------------------------- */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Project Description (max 250 words)
+            <label htmlFor="desc" className="block text-gray-700 font-medium mb-2">
+              Project Description (max 500 words)
             </label>
             <textarea
+              id="desc"
               value={projectDescription}
               onChange={handleProjectDescription}
               placeholder="Describe your project..."
@@ -151,19 +160,20 @@ function CreateTeam() {
               className="w-full border border-gray-300 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
             ></textarea>
             <div className="flex justify-between mt-1">
-              <p className="text-sm text-gray-500">Word Count: {count}/250</p>
+              <p className="text-sm text-gray-500">Word Count: {count}/500</p>
               {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
           </div>
 
           {/* --------------------------- Team Requirements --------------------------- */}
           <div>
-            <label className="block text-gray-700 font-medium mb-3">
+            <label htmlFor="req" className="block text-gray-700 font-medium mb-3">
               Team Requirements
             </label>
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2">
                 <input
+                  id="req"
                   type="radio"
                   name="requirement"
                   value="frontend"
@@ -212,9 +222,8 @@ function CreateTeam() {
 
           {/* --------------------------- Success Toast --------------------------- */}
           {created && (
-            <SuccessfulToast
-              mssg1="Project Created Successfully!"
-              mssg2="Your team is now visible to other users."
+            <SuccessToast
+              message="Project Created Successfully! Your team is now visible to other users."
               onClose={closePopUp}
             />
           )}

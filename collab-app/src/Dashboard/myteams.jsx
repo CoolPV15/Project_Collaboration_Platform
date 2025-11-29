@@ -8,29 +8,38 @@
  * @author Pranav Singh
  */
 
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { Users, Clock, CheckCircle2 } from "lucide-react";
 import PendingProjects from "./ProjectTabs/RequestedProjects.jsx";
 import JoinedProjects from "./ProjectTabs/JoinedProjects.jsx";
 import LeadProjects from "./ProjectTabs/LeadProjects.jsx";
 
 /**
- * MyTeams Component
- * -----------------
+ * @component MyTeams
+ * @description
  * This component acts as a container that organizes different team-related views
  * under an interactive tab-based interface.
  * 
- * Features:
+ * @features
  *  - Displays three tabs: Created Teams, Pending Requests, and Joined Teams.
  *  - Allows seamless tab switching with visual indicators for the active tab.
  *  - Loads corresponding subcomponents (`LeadProjects`, `PendingProjects`, `JoinedProjects`)
  *    dynamically based on the selected tab.
  */
 
-function MyTeams() {
+function MyTeams(Tab="created") {
   /** --------------------------- State Management --------------------------- */
   // Tracks which tab is currently active: "created", "pending", or "joined".
   const [activeTab, setActiveTab] = useState("created");
+
+  /** ------------------------------------------------------------------------
+   * @function UseEffect (Triggers on change in "Tab" object)
+   * @description Listens for change in "Tab" object and sets the ActiveTab
+   *              based on the change.
+   */
+  useEffect(() =>{
+    if(Tab.val!="") setActiveTab(Tab.val);
+  },[Tab])
 
   /** --------------------------- JSX Structure --------------------------- */
   return (

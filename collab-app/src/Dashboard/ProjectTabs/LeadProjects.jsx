@@ -3,7 +3,7 @@
  * @description
  * React component that displays all projects created by the authenticated user (Team Lead).
  * 
- * Features:
+ * @features
  * - Fetches all projects owned by the logged-in user.
  * - Expands/collapses project cards to show join requests and current members.
  * - Allows the Team Lead to Accept/Reject join requests.
@@ -15,7 +15,6 @@
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthProvider.jsx";
-
 import {
   Users,
   ChevronRight,
@@ -45,38 +44,24 @@ function LeadProjects() {
 
   const [loading, setLoading] = useState(true);
   const [leadProjects, setLeadProjects] = useState([]);
-
   const [expandedProject, setExpandedProject] = useState(null);
-
   const [requests, setRequests] = useState([]);
   const [members, setMembers] = useState([]);
-
   const [requestLoading, setRequestLoading] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
-
+    
   /**
-   * @function useEffect
-   * @description
-   * Fetches all projects created by the authenticated user using their email ID.
-   * Runs whenever `user` is available.
-   */
+  * @function useEffect
+  * @description Fetches all projects created by the logged-in user.
+  */
   useEffect(() => {
     if (!user) return;
-
-    /**
-     * @async
-     * @function fetchLeadProjects
-     * @description Calls backend API to retrieve all projects created by the team lead.
-     * @returns {Promise<void>}
-     */
     const fetchLeadProjects = async () => {
       try {
         setLoading(true);
-
         const res = await axios.get("http://127.0.0.1:8000/api/projectleads/", {
           params: { email: user.email },
         });
-
         setLeadProjects(res.data || []);
       } catch (err) {
         console.error("Error fetching lead projects:", err);
@@ -90,26 +75,19 @@ function LeadProjects() {
   }, [user]);
 
   /**
-   * @async
    * @function fetchRequests
-   * @param {string} projectname - The project for which join requests must be fetched.
-   * @description
-   * Retrieves all pending join requests for the given project.
+   * @description Fetches pending join requests for a specific project.
+   * @param {string} projectname - The name of the project to fetch requests for.
    */
   const fetchRequests = async (projectname) => {
     setRequestLoading(true);
-
     try {
       const res = await axios.get(
         "http://127.0.0.1:8000/api/projectrequestsdisplay/",
         {
-          params: {
-            email: user.email,
-            projectname,
-          },
+          params: { email: user.email, projectname },
         }
       );
-
       setRequests(res.data || []);
     } catch (err) {
       console.error("Error fetching requests", err);
@@ -120,25 +98,19 @@ function LeadProjects() {
   };
 
   /**
-   * @async
    * @function fetchMembers
-   * @param {string} projectname - Name of the project.
-   * @description Retrieves all currently approved team members for the project.
+   * @description Fetches current members of a specific project.
+   * @param {string} projectname - The name of the project to fetch members for.
    */
   const fetchMembers = async (projectname) => {
     setMembersLoading(true);
-
     try {
       const res = await axios.get(
         "http://127.0.0.1:8000/api/projectmembersdisplay/",
         {
-          params: {
-            email: user.email,
-            projectname,
-          },
+          params: { email: user.email, projectname },
         }
       );
-
       setMembers(res.data || []);
     } catch (err) {
       console.error("Error fetching members", err);
@@ -150,9 +122,8 @@ function LeadProjects() {
 
   /**
    * @function handleToggle
-   * @param {string} projectname - Name of the project clicked by the user.
-   * @description
-   * Expands/collapses a project card and loads requests and members when expanded.
+   * @description Expands or collapses a project card and fetches requests & members if expanded.
+   * @param {string} projectname - The name of the project to toggle.
    */
   const handleToggle = (projectname) => {
     if (expandedProject === projectname) {
@@ -167,28 +138,24 @@ function LeadProjects() {
   };
 
   /**
-   * @async
    * @function handleAccept
-   * @param {string} email - Email of requester
-   * @param {string} projectname - Name of the project
-   * @param {number} id - Project ID for deletion
-   * @description
-   * Approves a join request by:
-   * - Adding member to projectmembers table
-   * - Deleting the pending request from backend
+   * @description Accept a pending join request for a project.
+   * @param {string} email - The email of the user sending the join request.
+   * @param {string} projectname - The project name.
+   * @param {number} id - The request ID to delete after accepting.
+   * @param {string} message - Optional message from the user.
    */
-  const handleAccept = async (email, projectname, id) => {
+  const handleAccept = async (email, projectname, id, message) => {
     setRequestLoading(true);
-
     try {
       await axios.post("http://127.0.0.1:8000/api/projectmembers/", {
         owner: user.email,
         email,
         projectname,
+        message,
       });
 
       await axios.delete(`http://127.0.0.1:8000/api/projectrequests/${id}/`);
-
       fetchRequests(projectname);
       fetchMembers(projectname);
     } catch (err) {
@@ -199,28 +166,24 @@ function LeadProjects() {
   };
 
   /**
-   * @async
    * @function handleReject
-   * @param {string} email - Email of requester
-   * @param {string} projectname - Name of the project
-   * @param {number} id - Project ID for deletion
-   * @description
-   * Rejects a join request by:
-   * - Adding requester to rejected list
-   * - Deleting their pending request
+   * @description Reject a pending join request for a project.
+   * @param {string} email - The email of the user sending the join request.
+   * @param {string} projectname - The project name.
+   * @param {number} id - The request ID to delete after rejecting.
+   * @param {string} message - Optional message from the user.
    */
-  const handleReject = async (email, projectname, id) => {
+  const handleReject = async (email, projectname, id, message) => {
     setRequestLoading(true);
-
     try {
       await axios.post("http://127.0.0.1:8000/api/projectreject/", {
         owner: user.email,
         email,
         projectname,
+        message,
       });
 
       await axios.delete(`http://127.0.0.1:8000/api/projectrequests/${id}/`);
-
       fetchRequests(projectname);
     } catch (err) {
       console.error("Error rejecting request:", err);
@@ -229,6 +192,10 @@ function LeadProjects() {
     }
   };
 
+  /**
+   * @render
+   * @description Conditional rendering for loading, empty state, and list of lead projects.
+   */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-gray-500">
@@ -257,16 +224,19 @@ function LeadProjects() {
             key={projectname}
             className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-6"
           >
-            {/* ----------------------------  PROJECT HEADER  ---------------------------- */}
+            {/* Project Header */}
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => handleToggle(projectname)}
             >
-              <div>
-                <h3 className="text-lg font-semibold text-indigo-600">
-                  {projectname}
-                </h3>
-                <p className="text-sm text-gray-600">{p.description}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 px-5 mt-2 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg shadow-sm">
+                  {projectname?.charAt(0)?.toUpperCase() || "P"}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-indigo-600">{projectname}</h3>
+                  <p className="text-sm text-gray-600">{p.description}</p>
+                </div>
               </div>
 
               {expandedProject === projectname ? (
@@ -276,11 +246,10 @@ function LeadProjects() {
               )}
             </div>
 
-            {/* ---------------------------- EXPANDED PROJECT DETAILS ---------------------------- */}
+            {/* Expanded Project Details */}
             {expandedProject === projectname && (
               <div className="mt-6 border-t pt-6 space-y-8">
-
-                {/*---------------------------- PENDING REQUESTS ----------------------------*/}
+                {/* Pending Requests */}
                 <div>
                   <h4 className="text-md font-semibold text-indigo-700 mb-3">
                     Pending Join Requests
@@ -314,7 +283,7 @@ function LeadProjects() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() =>
-                                  handleAccept(req.email, projectname, req.id)
+                                  handleAccept(req.email, projectname, req.id, req.message)
                                 }
                                 className="px-4 py-1.5 bg-green-500 text-white rounded-lg flex items-center gap-2 hover:bg-green-600"
                               >
@@ -323,7 +292,7 @@ function LeadProjects() {
 
                               <button
                                 onClick={() =>
-                                  handleReject(req.email, projectname, req.id)
+                                  handleReject(req.email, projectname, req.id, req.message)
                                 }
                                 className="px-4 py-1.5 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-600"
                               >
@@ -343,7 +312,7 @@ function LeadProjects() {
                   )}
                 </div>
 
-                {/*---------------------------- CURRENT MEMBERS ----------------------------*/}
+                {/* Current Members */}
                 <div>
                   <h4 className="text-md font-semibold text-indigo-700 mb-3">
                     Current Team Members
@@ -365,21 +334,17 @@ function LeadProjects() {
                           <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center">
                             {m.member_fname?.[0]?.toUpperCase() || "X"}
                           </div>
-
                           <div>
                             <p className="font-medium text-gray-800">
                               {m.member_fname} {m.member_lname}
                             </p>
-                            <p className="text-sm text-gray-500">
-                              {m.member_email}
-                            </p>
+                            <p className="text-sm text-gray-500">{m.member_email}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-
               </div>
             )}
           </div>

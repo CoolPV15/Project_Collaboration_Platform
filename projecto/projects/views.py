@@ -124,21 +124,27 @@ class ProjectsDisplayView(viewsets.ModelViewSet):
             except User.DoesNotExist:
                 pass
 
-        if frontend == "true" and backend == "true":
-            pass
-        elif frontend == "true":
-            queryset = queryset.filter(frontend=True)
-        elif backend == "true":
-            queryset = queryset.filter(backend=True)
+            if frontend == "true" and backend == "true":
+                pass
+            elif frontend == "true":
+                queryset = queryset.filter(frontend=True)
+            elif backend == "true":
+                queryset = queryset.filter(backend=True)
         
-        projectsrequest = ProjectRequest.objects.all()
-        projectsrequest = projectsrequest.filter(member=user).values_list("project",flat=True)
+            projectsrequest = ProjectRequest.objects.all()
+            projectsrequest = projectsrequest.filter(member=user).values_list("project",flat=True)
 
-        projectsjoined = ProjectMembers.objects.all()
-        projectsjoined = projectsjoined.filter(member=user).values_list("project",flat=True)
+            projectsjoined = ProjectMembers.objects.all()
+            projectsjoined = projectsjoined.filter(member=user).values_list("project",flat=True)
 
-        queryset = queryset.exclude(id__in = projectsrequest)
-        queryset = queryset.exclude(id__in = projectsjoined)
+            # projectsreject = ProjectRequestRejected.objects.all()
+            # projectsreject = projectsreject.filter(user=user).values_list("project",flat=True)
+
+            queryset = queryset.exclude(id__in = projectsrequest)
+            queryset = queryset.exclude(id__in = projectsjoined)
+            # queryset = queryset.exclude(id__in = projectsreject)
+        else:
+            queryset = ProjectLead.objects.none()
 
         return queryset
 
@@ -310,7 +316,6 @@ class JoinedProjectDisplayView(viewsets.ModelViewSet):
         return queryset
 
 
-
 class ProjectMembersDisplayView(viewsets.ModelViewSet):
     """
     Returns all members of a specific project for a given owner.
@@ -379,3 +384,54 @@ class PendingProjectsView(viewsets.ModelViewSet):
                 pass
 
         return queryset
+    
+class ProjectCountView(viewsets.ModelViewSet):
+    """
+    Returns a summary count of projects for a user, including:
+    - Number of projects created by the user
+    - Number of projects the user has joined
+    - Number of pending join requests
+
+    Endpoint:
+        GET /api/projectcount/?email=<user_email>
+    """
+
+    def list(self, request):
+        """
+        Handle GET request to return project counts for a user.
+
+        Parameters:
+            request (HttpRequest): The incoming HTTP request containing query parameters.
+            - email (str, query param): Email of the user for whom project counts are requested.
+
+        Returns:
+            Response: JSON object containing:
+                - createdprojects (int): Total projects created by the user.
+                - joinedprojects (int): Total projects the user has joined.
+                - pendingrequests (int): Total pending join requests for the user.
+        """
+        email = self.request.query_params.get("email")
+
+        if email:
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "User not found"}, status=404
+                )
+
+            createdprojects = ProjectLead.objects.filter(owner=user).count()
+            joinedprojects = ProjectMembers.objects.filter(member=user).count()
+            pendingrequests = ProjectRequest.objects.filter(member=user).count()
+
+            data = {
+                "createdprojects": createdprojects,
+                "joinedprojects": joinedprojects,
+                "pendingrequests": pendingrequests
+            }
+
+            return Response(data)
+        else:
+            return Response(
+                {"error": "Email query parameter is required"}, status=400
+            )

@@ -224,7 +224,7 @@ class ProjectMemberCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectMembers
-        fields = ["email", "owner", "projectname"]
+        fields = ["email", "owner", "projectname","message"]
 
     def create(self, validated_data):
         """
@@ -263,6 +263,7 @@ class ProjectMemberCreateSerializer(serializers.ModelSerializer):
         new_joinee = ProjectMembers.objects.create(
             project=project,
             member=member,
+            message=validated_data["message"]
         )
 
         return new_joinee
@@ -287,7 +288,7 @@ class ProjectRejectedCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectRequestRejected
-        fields = ["email", "owner", "projectname"]
+        fields = ["email", "owner", "projectname","message"]
 
     def create(self, validated_data):
         """
@@ -325,7 +326,8 @@ class ProjectRejectedCreateSerializer(serializers.ModelSerializer):
 
         new_reject = ProjectRequestRejected.objects.create(
             project=project,
-            member=member,
+            user=member,
+            message=validated_data["message"]
         )
 
         return new_reject

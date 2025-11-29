@@ -35,7 +35,7 @@ function JoinedProjects() {
   const [membersLoading, setMembersLoading] = useState(false);
 
   /**
-   * @function fetchProjects
+   * @function useEffect
    * @description Fetches all projects joined by the logged-in user using their email.
    * Sets the project list into state and manages loading state.
    */
@@ -130,7 +130,7 @@ function JoinedProjects() {
       {joinedProjects.map((project) => (
         <div
           key={project.projectname}
-          className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-6"
+          className="bg-white border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl transition p-6 hover:scale-[1.01]"
         >
           {/* ------------------------------ Project Header ------------------------------ */}
           <div
@@ -139,9 +139,9 @@ function JoinedProjects() {
           >
             <div className="flex items-start gap-4">
               {/* Avatar */}
-              <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-semibold shadow-sm">
-                {project.owner_fname
-                  ? project.owner_fname.charAt(0).toUpperCase()
+              <div className="w-12 h-12 px-5 mt-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-md">
+                {project.projectname
+                  ? project.projectname.charAt(0).toUpperCase()
                   : "U"}
               </div>
 
@@ -149,7 +149,7 @@ function JoinedProjects() {
                 <h3 className="text-lg font-semibold text-indigo-600">
                   {project.projectname}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   {project.description || "No description available."}
                 </p>
 
@@ -182,14 +182,14 @@ function JoinedProjects() {
                   No team members yet.
                 </p>
               ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {members.map((m, index) => (
                     <div
                       key={index}
-                      className="bg-gradient-to-r from-indigo-50 to-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow transition"
+                      className="bg-gradient-to-r from-indigo-50 to-white border border-gray-200 rounded-xl shadow-md p-4 hover:shadow-lg transition transform hover:-translate-y-1"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold shadow-sm">
+                        <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold shadow">
                           {m.member_fname
                             ? m.member_fname.charAt(0).toUpperCase()
                             : "M"}

@@ -3,6 +3,7 @@
  * @description
  * Left-side visual component for authentication screens.
  * Displays the site name and a brief description using a blue gradient background.
+ * @author Pranav Singh
  */
 
 export default function LeftPane() {

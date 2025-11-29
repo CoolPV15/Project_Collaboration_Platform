@@ -43,7 +43,7 @@ class ProjectLead(models.Model):
         related_name="projects"
     )
     projectname = models.CharField(max_length=100)
-    description = models.CharField(max_length=250)
+    description = models.CharField(max_length=500)
     frontend = models.BooleanField(default=False)
     backend = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -65,7 +65,7 @@ class ProjectRequest(models.Model):
         member (ForeignKey):
             The user who is sending the request.
         message (CharField):
-            An optional message sent by the requester.
+            Optional message sent by the requester.
 
     Meta:
         unique_together:
@@ -83,7 +83,7 @@ class ProjectRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="project_member"
     )
-    message = models.CharField(max_length=250)
+    message = models.CharField(max_length=400, default="I am interested in joining this project")
 
     class Meta:
         unique_together = (("project", "member"),)
@@ -101,6 +101,8 @@ class ProjectMembers(models.Model):
             The project the member has joined.
         member (ForeignKey):
             The user who joined the project.
+        message (CharField):
+            Message attached when joining (default provided).
         joined_on (DateTimeField):
             Timestamp of joining.
 
@@ -119,6 +121,7 @@ class ProjectMembers(models.Model):
         on_delete=models.CASCADE,
         related_name="member_name"
     )
+    message = models.CharField(max_length=400, default="I am interested in joining this project")
     joined_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -137,6 +140,8 @@ class ProjectRequestRejected(models.Model):
             The project for which the request was rejected.
         user (ForeignKey):
             The user whose request was rejected.
+        message (CharField):
+            Optional message attached to the rejected request (default provided).
         rejected_on (DateTimeField):
             Timestamp when the rejection occurred.
 
@@ -156,6 +161,7 @@ class ProjectRequestRejected(models.Model):
         on_delete=models.CASCADE,
         related_name="user_name"
     )
+    message = models.CharField(max_length=400, default="I am interested in joining this project")
     rejected_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -11,11 +11,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Interceptors/axiosInstance";
+import axios from 'axios';
 import Logout from "./Logout.jsx";
 import CreateTeam from "./createteam.jsx";
 import JoinTeam from "./jointeam.jsx";
 import MyTeams from "./myteams.jsx";
 import { AuthContext } from "../context/AuthProvider.jsx";
+import { useDashboard } from "../context/DashboardContext.jsx";
 import {
   Users,
   PlusCircle,
@@ -24,15 +26,16 @@ import {
   Layers,
   Clock,
 } from "lucide-react";
+import LeadProjects from "./ProjectTabs/LeadProjects.jsx";
 
 /**
- * Home Component
- * --------------
+ * @component Home
+ * @description
  * Acts as the main landing page for authenticated users after login.
  * Provides navigation to different project-related functionalities through
  * a sidebar — including creating, joining, and managing teams.
  *
- * Features:
+ * @features
  *  - Validates authentication tokens and redirects unauthorized users.
  *  - Displays user information and activity stats.
  *  - Renders subcomponents dynamically based on the selected sidebar tab.
@@ -43,6 +46,9 @@ function Home() {
   // Accessing authentication data and user login function from AuthContext.
   const { user, loginUser } = useContext(AuthContext);
 
+  // Using Dashboard context to check for refresh to update the counts
+  const { refreshDashboard } = useDashboard();
+
   // React Router navigation hook.
   const navigate = useNavigate();
 
@@ -50,6 +56,11 @@ function Home() {
   // Tracks which sidebar tab is currently active: "create", "join", or "teams".
   const [activeTab, setActiveTab] = useState("create");
 
+  // Tracks which component to load in the ProjectTab: JoinedProjects, LeadProjects, RequestedProjects
+  const [tab, setTab] = useState("");
+  
+  // Tracks the count of each of: "createdprojects", "joinedprojects", "pendingrequests"
+  const [counts, setCounts] = useState({createdprojects: 0, joinedprojects: 0, pendingrequests: 0});
   /** ------------------------------------------------------------------------
    * @function useEffect (Authentication Check)
    * @description Checks for the presence of a valid access token on component mount.
@@ -92,11 +103,37 @@ function Home() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  /** ------------------------------------------------------------------------
+   * @function useEffect (Triggers on Dashboard Refresh)
+   * @description Checks for dashboard refresh to update the counts of various
+   *              tabs after receiving the counts from the backend.
+   * ------------------------------------------------------------------------- */
+  useEffect(() => {
+    if(!user) return;
+
+    const getCounts = async () => {
+      try{
+        const response = await axios.get("http://127.0.0.1:8000/api/projectcount/",{
+          params: {email:user.email}
+        });
+        setCounts({createdprojects: response.data["createdprojects"], 
+          joinedprojects: response.data["joinedprojects"], 
+          pendingrequests: response.data["pendingrequests"]
+        });
+      }
+      catch(err){
+        console.log("Error occurred",err);
+      }
+    }
+
+    getCounts();
+  },[user, refreshDashboard])
+
   /** --------------------------- Dashboard Stats --------------------------- */
   const stats = [
-    { label: "Teams Created", value: 0, icon: <PlusCircle className="text-blue-500" /> },
-    { label: "Teams Joined", value: 0, icon: <Users className="text-green-500" /> },
-    { label: "Pending Requests", value: 0, icon: <Clock className="text-yellow-500" /> },
+    { label: "Teams Created", value: counts["createdprojects"] , className:"created", icon: <PlusCircle className="text-blue-500" /> },
+    { label: "Teams Joined", value: counts["joinedprojects"], className:"joined", icon: <Users className="text-green-500" /> },
+    { label: "Pending Requests", value: counts["pendingrequests"], className:"pending",icon: <Clock className="text-yellow-500" /> },
   ];
 
   /** --------------------------- JSX Structure --------------------------- */
@@ -152,6 +189,7 @@ function Home() {
             <div className="flex gap-4 items-stretch flex-1">
               {stats.map((stat, index) => (
                 <div
+                  onClick={() => {setTab(stat.className), setActiveTab("teams")}}
                   key={index}
                   className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col items-center justify-center hover:shadow-md transition flex-1"
                 >
@@ -198,15 +236,15 @@ function Home() {
         {/* --------------------------- Dynamic Content Rendering --------------------------- */}
         {activeTab === "create" && <CreateTeam />}
         {activeTab === "join" && <JoinTeam />}
-        {activeTab === "teams" && <MyTeams />}
+        {activeTab === "teams" && <MyTeams val={tab}/>}
       </div>
     </div>
   );
 }
 
 /**
- * SidebarButton Component
- * -----------------------
+ * @component SidebarButton
+ * @description
  * Reusable button component for the sidebar navigation.
  *
  * @param {Object} props - Component props

@@ -1,14 +1,14 @@
 /**
  * @file PendingProjects.jsx
  * @description
- * This component displays all projects for which the logged-in user has sent a join
+ * React component that displays all projects for which the logged-in user has sent a join
  * request and is awaiting approval. It retrieves data from the backend endpoint
  * `/api/pendingprojects/` using the user's email as a query parameter.
  *
- * The component manages three UI states:
- * 1. Loading state
- * 2. Empty state (no pending requests)
- * 3. List of pending project requests
+ * @features
+ * - Fetches all pending join requests for the authenticated user.
+ * - Handles loading and empty states.
+ * - Displays project details, owner info, and user's request message.
  *
  * @author Pranav Singh
  */
@@ -21,8 +21,10 @@ import { useContext, useEffect, useState } from "react";
 /**
  * @component PendingProjects
  * @description
- * Displays all pending join requests sent by the currently authenticated user.
- * Handles data fetching, loading states, and rendering project cards.
+ * Functional component that fetches and renders all pending join requests sent by
+ * the currently authenticated user.
+ *
+ * @returns {JSX.Element} A list of pending projects, or loading/empty state messages.
  */
 function PendingProjects() {
   const { user } = useContext(AuthContext);
@@ -31,16 +33,12 @@ function PendingProjects() {
   const [loading, setLoading] = useState(true);
 
   /**
-   * @function fetchPendingProjects
-   * @description
-   * Fetches all pending project requests for the logged-in user from the API.
-   * Runs automatically on component mount or when user changes.
-   *
-   * @triggers useEffect
-   */
+  * @function useEffect
+  * @description Fetches pending join requests for the authenticated user from the backend.
+  * Updates the component state with the retrieved projects or an empty array if none found.
+  */
   useEffect(() => {
     if (!user) return;
-
     const fetchPendingProjects = async () => {
       try {
         setLoading(true);
@@ -54,7 +52,8 @@ function PendingProjects() {
 
         setPendingProjects(response.data || []);
       } catch (err) {
-        console.log("Error fetching pending projects", err);
+        console.error("Error fetching pending projects", err);
+        setPendingProjects([]);
       } finally {
         setLoading(false);
       }
@@ -63,6 +62,10 @@ function PendingProjects() {
     fetchPendingProjects();
   }, [user]);
 
+  /**
+   * @render
+   * @description Renders loading, empty, or list of pending project requests.
+   */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-gray-500">
@@ -87,18 +90,22 @@ function PendingProjects() {
           key={index}
           className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 hover:shadow-md transition"
         >
-          {/* ------------------------------
-                Project Title & Description
-              ------------------------------ */}
-          <h3 className="text-lg font-semibold text-indigo-600">
-            {p.projectname}
-          </h3>
+          {/* ----------------------------
+                Project Title & Description with Avatar
+              ---------------------------- */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 px-5 mt-1 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg shadow-sm">
+              {p.projectname?.charAt(0)?.toUpperCase() || "P"}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-indigo-600">{p.projectname}</h3>
+              <p className="text-sm text-gray-700 mt-1">{p.description}</p>
+            </div>
+          </div>
 
-          <p className="text-sm text-gray-700 mt-1">{p.description}</p>
-
-          {/* ------------------------------
+          {/* ----------------------------
                 Owner Details
-              ------------------------------ */}
+              ---------------------------- */}
           <div className="mt-4 text-sm text-gray-600 space-y-1">
             <p className="flex items-center">
               <User size={16} className="mr-1 text-gray-500" />
@@ -111,9 +118,9 @@ function PendingProjects() {
             </p>
           </div>
 
-          {/* ------------------------------
+          {/* ----------------------------
                 User's Join Request Message
-              ------------------------------ */}
+              ---------------------------- */}
           <div className="mt-5 bg-gray-50 border-l-4 border-indigo-500 p-4 rounded-md">
             <h4 className="font-medium text-gray-800">Your Request Message:</h4>
             <p className="text-sm text-gray-600 mt-1 italic">"{p.message}"</p>

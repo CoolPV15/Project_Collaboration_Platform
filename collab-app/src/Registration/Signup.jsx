@@ -21,20 +21,17 @@ import { Link } from "react-router-dom";
 import { User, Mail, Lock, Layers } from "lucide-react";
 import LeftPane from "./LeftPane.jsx";
 import ErrorToast from "../toasts/ErrorToast.jsx";
-import SuccessfulToast from "../toasts/SuccessfulToast.jsx";
+import SuccessToast from "../toasts/SuccessToast.jsx";
 
 /**
- * RightPane Component
- * -------------------
+ * @component RightPane
+ * @description
  * Handles user registration logic, form validation, and backend integration.
- *
- * Key Features:
  *  - Accepts user details (name, email, password, proficiency).
  *  - Sends registration data to backend API endpoint.
  *  - Displays success or error toast based on response.
  *  - Clears input fields after successful submission.
  */
-
 function RightPane() {
   /** --------------------------- State Management --------------------------- */
   const [fname, setFname] = useState("");
@@ -59,7 +56,6 @@ function RightPane() {
     let front = false;
     let back = false;
 
-    // Determine proficiency flags
     if (prof === "frontend") front = true;
     else if (prof === "backend") back = true;
     else {
@@ -85,10 +81,10 @@ function RightPane() {
       setUsername("");
       setPassword("");
       setCreated(true);
-    } catch (error) {
+    } catch (err) {
       setCreated(false);
       setError(true);
-      console.error("Error creating account:", error);
+      console.error("Error creating account:", err);
     }
   };
 
@@ -113,137 +109,150 @@ function RightPane() {
   };
 
   /** --------------------------- Input Handlers --------------------------- */
-  const handleFname = (event) => setFname(event.target.value);
-  const handleLname = (event) => setLname(event.target.value);
-  const handleUsername = (event) => setUsername(event.target.value);
-  const handlePassword = (event) => setPassword(event.target.value);
-  const handleProf = (event) => setProf(event.target.value);
+  const handleFname = (e) => setFname(e.target.value);
+  const handleLname = (e) => setLname(e.target.value);
+  const handleUsername = (e) => setUsername(e.target.value);
+  const handlePassword = (e) => setPassword(e.target.value);
+  const handleProf = (e) => setProf(e.target.value);
 
   /** --------------------------- JSX Structure --------------------------- */
   return (
-    <div className="flex justify-center items-center w-full md:w-1/2 bg-gradient-to-br from-blue-50 to-blue-100 p-10">
-      <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl border border-gray-200">
-        {/* --------------------------- Header --------------------------- */}
-        <div className="flex flex-col items-center mb-6">
-          <Layers className="w-12 h-12 text-blue-600 mb-2" />
-          <h1
-            id="sn-tag"
-            className="text-3xl font-bold text-center text-gray-900 mb-2"
-          >
+    <div className="relative flex justify-center items-center w-full md:w-1/2 h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-indigo-200 animate-gradient">
+      <div className="w-full max-w-md bg-white/40 p-10 rounded-3xl shadow-2xl border border-gray-200">
+
+        {/* Header */}
+        <div className="flex flex-col items-center mb-8">
+          <Layers className="w-12 h-12 text-blue-600 mb-2 drop-shadow-md" />
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight text-center">
             SIGN UP
           </h1>
-          <p className="text-center text-gray-600 text-sm">
-            Please fill all the necessary details
+          <p className="text-gray-600 mt-1 text-sm text-center">
+            Please fill all the necessary details.
           </p>
         </div>
 
-        {/* --------------------------- Form --------------------------- */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* First & Last Name Fields */}
-          <div className="flex gap-4">
-            <div className="flex items-center border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition w-1/2">
-              <User className="w-5 h-5 text-gray-400 mr-2" />
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* First & Last Name */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
+              <User className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
               <input
+                id="fname"
                 type="text"
-                name="fname"
-                placeholder="First Name"
                 value={fname}
                 onChange={handleFname}
                 required
-                className="w-full outline-none"
+                className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-300 transition placeholder-transparent"
+                placeholder="First Name"
               />
+              <label
+                htmlFor="fname"
+                className={`absolute py-1 left-10 px-1 rounded text-gray-500 text-sm transition-all duration-200
+                  ${fname ? "-top-2.5 text-xs text-blue-600" : "top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-600"}`}
+              >
+                First Name
+              </label>
             </div>
-            <div className="flex items-center border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition w-1/2">
-              <User className="w-5 h-5 text-gray-400 mr-2" />
+
+            <div className="relative">
+              <User className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
               <input
+                id="lname"
                 type="text"
-                name="lname"
-                placeholder="Last Name"
                 value={lname}
                 onChange={handleLname}
                 required
-                className="w-full outline-none"
+                className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-300 transition placeholder-transparent"
+                placeholder="Last Name"
               />
+              <label
+                htmlFor="lname"
+                className={`absolute py-1 left-10 px-1 rounded text-gray-500 text-sm transition-all duration-200
+                  ${lname ? "-top-2.5 text-xs text-blue-600" : "top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-600"}`}
+              >
+                Last Name
+              </label>
             </div>
           </div>
 
-          {/* Proficiency Dropdown */}
-          <div className="flex items-center border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
-            <Layers className="w-5 h-5 text-gray-400 mr-2" />
+          {/* Proficiency */}
+          <div className="relative">
+            <Layers className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
             <select
+              id="prof"
               value={prof}
               onChange={handleProf}
               required
-              className="w-full outline-none bg-transparent"
+              className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-300 transition"
             >
-              <option value="" disabled>
-                Select your proficiency
-              </option>
+              <option value="">Select proficiency</option>
               <option value="frontend">Frontend</option>
               <option value="backend">Backend</option>
               <option value="both">Both</option>
             </select>
           </div>
 
-          {/* Username (Email) Field */}
-          <div className="flex items-center border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
-            <Mail className="w-5 h-5 text-gray-400 mr-2" />
+          {/* Email */}
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
             <input
+              id="email"
               type="email"
-              name="username"
-              placeholder="Email"
               value={username}
               onChange={handleUsername}
               required
-              className="w-full outline-none"
+              className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-300 transition placeholder-transparent"
+              placeholder="Email"
             />
+            <label
+              htmlFor="email"
+              className={`absolute py-1 left-10 px-1 rounded text-gray-500 text-sm transition-all duration-200
+                ${username ? "-top-2.5 text-xs text-blue-600" : "top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-600"}`}
+            >
+              Email
+            </label>
           </div>
 
-          {/* Password Field */}
-          <div className="flex items-center border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
-            <Lock className="w-5 h-5 text-gray-400 mr-2" />
+          {/* Password */}
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
             <input
+              id="password"
               type="password"
-              name="password"
-              placeholder="Password"
               value={password}
               onChange={handlePassword}
               required
-              className="w-full outline-none"
+              className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-300 transition placeholder-transparent"
+              placeholder="Password"
             />
+            <label
+              htmlFor="password"
+              className={`absolute py-1 left-10 px-1 rounded text-gray-500 text-sm transition-all duration-200
+                ${password ? "-top-2.5 text-xs text-blue-600" : "top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-600"}`}
+            >
+              Password
+            </label>
           </div>
 
-          {/* Toast Messages */}
-          {error && (
-            <ErrorToast
-              error={"Oops! This account already exists"}
-              onClose={closePopUp}
-            />
-          )}
-          {created && (
-            <SuccessfulToast
-              mssg1={"Account Created"}
-              mssg2={"You can login now"}
-              onClose={closePopUp}
-            />
-          )}
+          {/* Toasts */}
+          {error && <ErrorToast error="Oops! This account already exists" onClose={closePopUp} />}
+          {created && <SuccessToast message="Account Created! You can login now" onClose={closePopUp} />}
 
           {/* Submit Button */}
           <button
             type="submit"
             className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 transition duration-300 text-lg flex items-center justify-center gap-2"
           >
-            <Layers className="w-5 h-5" /> SIGN UP
+            <Layers className="w-5 h-5" /> CREATE ACCOUNT
           </button>
         </form>
 
-        {/* Redirect to Sign In Page */}
+        {/* Redirect to Sign In */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?
-          <Link
-            to="/"
-            className="text-blue-600 hover:underline ml-1 font-medium"
-          >
+          <Link to="/" className="text-blue-600 hover:underline ml-1 font-medium">
             Sign In
           </Link>
         </p>
@@ -253,8 +262,8 @@ function RightPane() {
 }
 
 /**
- * SignUp Component
- * ----------------
+ * @component SignUp
+ * @description
  * Wrapper layout that displays the left informational pane (`LeftPane`)
  * and the right signup form (`RightPane`) side by side.
  *

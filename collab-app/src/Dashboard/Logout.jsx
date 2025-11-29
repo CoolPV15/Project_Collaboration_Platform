@@ -10,8 +10,8 @@ import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../Interceptors/axiosInstance';
 
 /**
- * Logout Component
- * ---------------------
+ * @components Logout
+ * @description
  * This component provides users to manually logout from their account by removing the
  * access and refresh tokens from the local storage and setting the variable "islogged" 
  * to false.
