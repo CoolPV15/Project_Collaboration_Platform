@@ -102,10 +102,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'projectodb',
-        'USER' : 'adminpv',
+        'USER' : 'postgres',
         'PASSWORD' : 'blacksheep15',
         'HOST': 'localhost',
-        'PORT': '5432'
+        'PORT': '5434'
     }
 }
 

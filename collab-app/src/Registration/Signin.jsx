@@ -1,128 +1,200 @@
-import { useState, useEffect, useContext} from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import axios from "axios";
-import './Signin.css';
-import LeftPane from './LeftPane.jsx'
+/**
+ * @file Signin.jsx
+ * @description
+ * React component that provides a sign-in interface for registered users.
+ * It authenticates user credentials against the backend API and grants access
+ * to the dashboard upon successful login. The component securely stores
+ * authentication tokens, manages login state, and redirects authenticated users.
+ * 
+ * This file contains two components:
+ *  - `RightPane`: The main sign-in form logic and dynamic UI.
+ *  - `Signin`: A wrapper that combines the left informational pane and the right login form.
+ * 
+ * @author Pranav
+ */
+
+import { useState, useEffect, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Lock, Users, Key } from "lucide-react";
+import LeftPane from "./LeftPane.jsx";
 import ErrorToast from "../toasts/ErrorToast";
 import axiosInstance from "../Interceptors/axiosInstance";
 import { AuthContext } from "../context/AuthProvider.jsx";
-{/* Author: Pranav Singh*/}
 
+/**
+ * @component RightPane
+ * @description
+ * Handles user authentication for existing accounts.
+ * Offers input fields for email and password, validates credentials,
+ * and navigates users to the dashboard upon successful login.
+ */
 function RightPane() {
-  {/*
-    Component designed for the user with existing accounts to sign in 
-  */}
-    
-  {/*
-    Using useState to store and constantly update the username and password entered by the user in the specified fields.
-  */}
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  /** --------------------------- State Management --------------------------- */
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const {setAuthTokens} = useContext(AuthContext);
+  const { setAuthTokens } = useContext(AuthContext);
 
-  {/*Navigating to the Home dashboard if the user is already logged in*/}
-  useEffect(() =>{
-    if(localStorage.getItem("islogged")==="true"){
-      navigate("home");
-    }
-  },[]);
+/** ------------------------------------------------------------------------ 
+ * @function useEffect 
+ * @description Redirects users to the home dashboard if already logged in. 
+ * ------------------------------------------------------------------------ */
+  useEffect(() => {
+    if (localStorage.getItem("islogged") === "true") navigate("home");
+  }, []);
 
-  const authenticateData = async (e) => {
-    const user = { email: username, password: password };
-
-    try {
-      const { data } = await axiosInstance.post("token/", user);
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
-      localStorage.setItem("islogged","true");
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
-      console.log("Login Successful");
-      setAuthTokens(data);
-      navigate('home');
-    } catch (error) { 
-      setError("Invalid Credentials");
-      console.log("Error Logging in");
-    }
-  }
-
-
-  useEffect(() =>{
+/** ------------------------------------------------------------------------ 
+ * @function useEffect
+ * @description 
+ * Listens for changes in localStorage to synchronize login status across tabs.
+ * Automatically redirects to home if login occurs elsewhere.
+ * ------------------------------------------------------------------------ */
+  useEffect(() => {
     const handleStorageChange = (e) => {
-      if(e.key==="islogged" && e.newValue=="true"){
-        navigate("home");
-      }
+      if (e.key === "islogged" && e.newValue === "true") navigate("home");
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+/** ------------------------------------------------------------------------
+ * @function authenticateData 
+ * @description 
+ * Sends user credentials (email and password) to the backend API for authentication. 
+ * On success, stores access and refresh tokens in localStorage and updates 
+ * the global authentication context. 
+ * 
+ * On failure, displays an error message. 
+ *  ------------------------------------------------------------------------ */
+  const authenticateData = async () => {
+    try {
+      const { data } = await axiosInstance.post("token/", {
+        email: username,
+        password: password,
+      });
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+      localStorage.setItem("islogged", "true");
+
+      axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${data.access}`;
+      setAuthTokens(data);
+      navigate("home");
+    } catch (err) {
+      setError("Invalid Credentials");
+      console.error(err);
     }
+  };
 
-    window.addEventListener("storage",handleStorageChange);
-
-    return () => window.removeEventListener("storage",handleStorageChange);
-  },[])
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
+/** ------------------------------------------------------------------------
+ * @function handleSubmit
+ * @description 
+ * Handles the login form submission, prevents page reload, and triggers user authentication.
+ *
+ * @param {Event} event - Form submission event
+ * ------------------------------------------------------------------------ */
+  const handleSubmit = (e) => {
+    e.preventDefault();
     authenticateData();
-  }
+  };
 
-  {/*
-    Updating the username and password with every event being triggered when the user types in the field.
-  */}
-  const handleusername = (event) => setUsername(event.target.value);
-  const handlepass = (event) => setPassword(event.target.value);
+/** ------------------------------------------------------------------------
+ * @function closePopUp
+ * @description Closes the error toast popup when dismissed. 
+ * ------------------------------------------------------------------------ */
+  const closePopUp = () => setError("");
 
   return (
-    <div className="flex justify-center items-center w-full md:w-1/2 h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl">
-        <h1 id="sign-in" className="mb-6 text-3xl font-bold tracking-tight text-gray-900 text-center">SIGN IN</h1>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            {/* Username */}
-            <label id="usd" htmlFor="username" className="block mb-2 text-sm font-medium text-gray-700">Email</label>
-            <input 
-              type="email" 
-              name="Username" 
-              value={username} 
-              onChange={handleusername} 
-              required 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    <div className="relative flex justify-center items-center w-full md:w-1/2 h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-indigo-200 animate-gradient">
+
+      {/* Card */}
+      <div className="backdrop-blur-xl bg-white/40 border border-white/20 shadow-2xl rounded-3xl p-10 w-full max-w-md">
+
+        {/* Header */}
+        <div className="flex flex-col items-center mb-8">
+          <Users className="w-12 h-12 text-blue-700 mb-2 drop-shadow-md" />
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight text-center">
+            SIGN IN
+          </h1>
+          <p className="text-gray-600 mt-1 text-sm text-center">
+            Enter your credentials to access your dashboard.
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-7">
+
+          {/* Email */}
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
+            <input
+              id="email"
+              type="email"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-300 rounded-xl outline-none transition"
             />
+            <label
+              htmlFor="email"
+              className={`absolute py-1 left-10 px-1 rounded text-gray-500 text-sm transition-all duration-200
+                          ${username ? "-top-2.5 text-xs text-blue-600" : "top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-600"}`}
+            >
+              Email
+            </label>
           </div>
 
           {/* Password */}
-          <div>
-            <label id="passw" htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">Password</label>
-            <input 
-              type="password" 
-              name="Password" 
-              value={password} 
-              onChange={handlepass} 
-              required 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 text-gray-400 transition-colors duration-200 peer-focus:text-blue-600" />
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="peer w-full pl-10 pr-3 py-3 bg-white/60 border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-300 rounded-xl outline-none transition"
             />
-            {error && <ErrorToast error={error}/>}
+            <label
+              htmlFor="password"
+              className={`absolute py-1 left-10 px-1 rounded text-gray-500 text-sm transition-all duration-200
+                          ${password ? "-top-2.5 text-xs text-blue-600" : "top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-600"}`}
+            >
+              Password
+            </label>
           </div>
 
-          {/*Sign In Button*/}
-          <button 
-            type="submit" 
-            className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white tracking-wide font-semibold rounded-xl shadow-lg flex items-center justify-center gap-2 transition hover:shadow-2xl text-lg"
           >
-            SIGN IN
+            <Key className="w-5 h-5" /> Sign In
           </button>
         </form>
 
-        {/*Link to redirect to Sign up Page*/}
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account? 
-          <Link to="/signup" className="text-blue-600 hover:underline ml-1">Sign Up</Link>
+        {/* Signup Link */}
+        <p className="mt-6 text-center text-sm text-gray-700">
+          New here?
+          <Link to="/signup" className="ml-1 text-blue-700 font-medium hover:underline">
+            Create an account
+          </Link>
         </p>
       </div>
+        {/* Error Toast */}
+        {error && ( <div className="mt-4"> <ErrorToast error={error} onClose={closePopUp} /> </div> )}
     </div>
   );
 }
 
+/**
+ * @component Signin
+ * @description
+ * Wrapper component that combines the left informational pane
+ * (`LeftPane`) and the right login form (`RightPane`).
+ *
+ * @returns {JSX.Element} A responsive layout containing both panes.
+ */
 function Signin() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen">

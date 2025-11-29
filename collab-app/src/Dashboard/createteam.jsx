@@ -1,172 +1,285 @@
+/**
+ * @file createteam.jsx
+ * @description 
+ * React component that allows authenticated users to create a new project team
+ * by specifying project details and team requirements. The component interacts
+ * with a backend API to submit the project information.
+ * @author Pranav Singh
+ */
+
 import React, { useState, useContext } from "react";
 import axios from "axios";
-import Home from "./home";
-import {AuthContext} from "../context/AuthProvider.jsx"
-import SuccessfulToast from "../toasts/SuccessfulToast.jsx"
-{/*Author: Pranav Singh*/}
+import { AuthContext } from "../context/AuthProvider.jsx";
+import SuccessToast from "../toasts/SuccessToast.jsx";
+import { useDashboard } from "../context/DashboardContext.jsx";
+import {
+  Code2,
+  FileText,
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
+import ErrorToast from "../toasts/ErrorToast.jsx";
 
-{/* Component for creating a team */}
+/**
+ * @component CreateTeam
+ * @description
+ * This component provides a user interface for project leads to create new teams.
+ * It allows them to:
+ *  - Enter a project name and description.
+ *  - Select the type of developers required (frontend, backend, or both).
+ *  - Submit project details to the backend API for storage.
+ *  - View a live preview of the project information as they fill out the form.
+ */
+
 function CreateTeam() {
-    {/*Using useState for handling Project Name, Description and the requirements*/}
+  /** --------------------------- State Management --------------------------- */
+  const { triggerRefresh } = useDashboard();
+  const [refresh, setRefresh] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [need, setNeed] = useState({frontend: true, backend: true})
+  const [need, setNeed] = useState({ frontend: true, backend: true });
   const [count, setCount] = useState(0);
   const [error, setError] = useState("");
   const [created, setCreated] = useState(false);
-  const {user} = useContext(AuthContext);
 
-  {/*Function for detecting the description as the user types in the input field and conditional check to make sure
-    that the length of the description does not exceed the maximum limit */}
+  // Accessing logged-in user data from global AuthContext
+  const { user } = useContext(AuthContext);
+
+
+  /** ------------------------------------------------------------------------
+   * @function handleProjectDescription
+   * @description Updates project description while enforcing a maximum limit of 250 characters.
+   *              Displays an error if the limit is exceeded.
+   * @param {Event} event - Input change event
+   * ------------------------------------------------------------------------ */
   const handleProjectDescription = (event) => {
     const value = event.target.value;
-    if(value.length>250){ 
-        setError("Project description must not exceed 250 words")
-        return;
-    } 
-    setCount(value.length);
-    setProjectDescription(event.target.value);
-  }
-
-  const postProject = async(e) => {
-    console.log(user);
-    const project = {email:user.email, projectname:projectName, description:projectDescription,frontend:need.frontend,
-      backend:need.backend
-    }
-
-    try{
-      console.log(project);
-      const {data} = await axios.post("http://127.0.0.1:8000/api/projectleads/",project);
-      console.log("Project Created");
-      setCreated(true);
-    }catch(error){
-      console.log("An error Occured",error);
-    }
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (count > 250) {
-      setError("Project description must not exceed 250 words.");
+    if (value.length > 500) {
+      setError("Project description must not exceed 500 words.");
       return;
     }
-
-    postProject();
-
     setError("");
+    setCount(value.length);
+    setProjectDescription(value);
   };
 
+  /** ------------------------------------------------------------------------
+   * @function postProject
+   * @description Sends a POST request to the backend API with the project data.
+   *              On successful submission, it triggers a success toast message.
+   * ------------------------------------------------------------------------ */
+  const postProject = async () => {
+    const project = {
+      email: user.email,
+      projectname: projectName,
+      description: projectDescription,
+      frontend: need.frontend,
+      backend: need.backend,
+    };
+
+    try {
+      await axios.post("http://127.0.0.1:8000/api/projectleads/", project);
+      console.log("Project Created Successfully");
+      setCreated(true);
+      triggerRefresh();
+      setRefresh(prev => !prev);
+    } catch (error) {
+      console.error("An error occurred while creating the project:", error);
+      setError("An error occurred while creating the project. Please try again.");
+    }
+  };
+
+  /** ------------------------------------------------------------------------
+   * @function handleSubmit
+   * @description Handles form submission, validates input fields, and triggers
+   *              the project creation request.
+   * @param {Event} e - Form submission event
+   * ------------------------------------------------------------------------ */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (count > 500) {
+      setError("Project description must not exceed 500 words.");
+      return;
+    }
+    setError("");
+    postProject();
+  };
+
+  /** ------------------------------------------------------------------------
+   * @function closePopUp
+   * @description Closes the success toast popup after project creation.
+   * ------------------------------------------------------------------------ */
   const closePopUp = () => {
     setCreated(false);
-  }
+  };
 
+  /** --------------------------- JSX Structure --------------------------- */
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        Create a New Team
-      </h2>
+    <div className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-lg border border-gray-200 p-8 flex flex-col lg:flex-row gap-10">
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Project Name */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Project Name
-          </label>
-          <input
-            type="text"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            placeholder="Enter project name"
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          />
-        </div>
+      {/* --------------------------- Form Section --------------------------- */}
+      <div className="flex-1">
+        <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3 mb-8">
+          <Code2 className="text-blue-600" /> Create a New Team
+        </h2>
 
-        {/* Project Description */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Project Description (max 250 words)
-          </label>
-          <textarea
-            value={projectDescription}
-            onChange= {handleProjectDescription}
-            placeholder="Describe your project"
-            rows="5"
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          ></textarea>
-          <p className="text-sm text-gray-500 mt-1">
-            Word Count: {count} / 250
-          </p>
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
 
-        {/* Requirement Selection */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Team Requirements
-          </label>
-          <div className="mb-5 flex items-center space-x-6">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="requirement"
-                value="frontend"
-                checked = {need.frontend === true && need.backend === false}
-                onChange = {() => setNeed({
-                  ...need,
-                  frontend:true,
-                  backend:false
-                })}
-                className="mr-2"
-              />
-              Frontend Developers
+          {/* --------------------------- Project Name Input --------------------------- */}
+          <div>
+            <label htmlFor="pname" className="block text-gray-700 font-medium mb-2">
+              Project Name
             </label>
-
-            <label className="flex items-center">
+            <div className="relative">
+              <FileText className="absolute left-3 top-2.5 text-gray-400" size={18} />
               <input
-                type="radio"
-                name="requirement"
-                value="backend"
-                className="mr-2"
-                checked = {need.frontend === false && need.backend === true}
-                onChange = {() => setNeed({
-                  ...need,
-                  frontend:false,
-                  backend:true
-                })}
+                id="pname"
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project name"
+                required
+                className="w-full border border-gray-300 rounded-xl pl-10 pr-3 py-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
               />
-              Backend Developers
-            </label>
-
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="requirement"
-                value="both"
-                className="mr-2"
-                checked = {need.frontend === true && need.backend === true}
-                onChange = {() => setNeed({
-                  ...need,
-                  frontend:true,
-                  backend:true
-                })}
-              />
-              Both
-            </label>
+            </div>
           </div>
-          {created && <SuccessfulToast mssg1={"Project Created"} mssg2={""} onClose={closePopUp}/>}
-        </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-600 transition"
-        >
-          Create Team
-        </button>
-      </form>
+          {/* --------------------------- Project Description Input --------------------------- */}
+          <div>
+            <label htmlFor="desc" className="block text-gray-700 font-medium mb-2">
+              Project Description (max 500 words)
+            </label>
+            <textarea
+              id="desc"
+              value={projectDescription}
+              onChange={handleProjectDescription}
+              placeholder="Describe your project..."
+              rows="5"
+              required
+              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
+            ></textarea>
+            <div className="flex justify-between mt-1">
+              <p className="text-sm text-gray-500">Word Count: {count}/500</p>
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+            </div>
+          </div>
+
+          {/* --------------------------- Team Requirements --------------------------- */}
+          <div>
+            <label htmlFor="req" className="block text-gray-700 font-medium mb-3">
+              Team Requirements
+            </label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2">
+                <input
+                  id="req"
+                  type="radio"
+                  name="requirement"
+                  value="frontend"
+                  checked={need.frontend && !need.backend}
+                  onChange={() => setNeed({ frontend: true, backend: false })}
+                  className="accent-blue-600"
+                />
+                Frontend Devs
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="requirement"
+                  value="backend"
+                  checked={!need.frontend && need.backend}
+                  onChange={() => setNeed({ frontend: false, backend: true })}
+                  className="accent-blue-600"
+                />
+                Backend Devs
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="requirement"
+                  value="both"
+                  checked={need.frontend && need.backend}
+                  onChange={() => setNeed({ frontend: true, backend: true })}
+                  className="accent-blue-600"
+                />
+                Both
+              </label>
+            </div>
+          </div>
+
+          {/* --------------------------- Submit Button --------------------------- */}
+          <div>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              Create Team
+            </button>
+          </div>
+
+          {/* --------------------------- Success Toast --------------------------- */}
+          {created && (
+            <SuccessToast
+              message="Project Created Successfully! Your team is now visible to other users."
+              onClose={closePopUp}
+            />
+          )}
+        </form>
+      </div>
+
+      {/* --------------------------- Live Project Preview --------------------------- */}
+      <div className="hidden lg:flex flex-col flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 border border-gray-200 shadow-inner">
+        <h3 className="font-semibold text-gray-800 text-xl mb-4 flex items-center gap-2">
+          <Users className="text-blue-600" /> Project Summary
+        </h3>
+        <div className="space-y-4 text-gray-700">
+          <div>
+            <p className="text-sm font-medium text-gray-500">Name</p>
+            <p className="font-semibold text-gray-800">
+              {projectName || "No name entered yet"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-500">Description</p>
+            <p className="text-gray-700 leading-relaxed">
+              {projectDescription || "Start typing your project idea..."}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-500">Team Requirement</p>
+            <div className="flex gap-2 mt-1">
+              {need.frontend && (
+                <span className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                  Frontend
+                </span>
+              )}
+              {need.backend && (
+                <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
+                  Backend
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center gap-2">
+            {created ? (
+              <CheckCircle2 className="text-green-600" />
+            ) : (
+              <AlertTriangle className="text-yellow-600" />
+            )}
+            <p className="text-sm text-gray-600">
+              {created
+                ? "Team successfully created."
+                : "Fill in the details to preview your project information."}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

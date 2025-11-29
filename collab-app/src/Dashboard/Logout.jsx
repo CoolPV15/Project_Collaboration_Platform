@@ -1,11 +1,32 @@
+/**
+ * @file Logout.jsx
+ * @description React component that handles logout when the user clicks on the logout button
+ * on the sidebar
+ * @author Pranav Singh
+ */
+
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../Interceptors/axiosInstance';
-{/*Author: Pranav Singh*/}
+
+/**
+ * @components Logout
+ * @description
+ * This component provides users to manually logout from their account by removing the
+ * access and refresh tokens from the local storage and setting the variable "islogged" 
+ * to false.
+ */
 
 function Logout() {
+    /** --------------------- STATE MANAGEMENT -------------------------- */
     const navigate = useNavigate();
 
+    /**
+     * @function handleLogOut
+     * @description Removes the access and refresh tokens from the local storage and set
+     * the value of variable "islogged" to false, while navigating user back to the sign
+     * in tab.
+     */
     const handleLogOut = async () => {
         // Capturing the refresh token
         const refresh_token = localStorage.getItem("refresh_token");
@@ -46,7 +67,7 @@ function Logout() {
     };
 
     return(
-        <button onClick = {handleLogOut}>Logout</button>
+        <button className="w-full" onClick = {handleLogOut}>Logout</button>
     );
 }
 
