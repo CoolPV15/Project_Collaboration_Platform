@@ -76,7 +76,7 @@ function Home() {
     } else {
       (async () => {
         try {
-          const { data } = await axiosInstance.get("accounts/home/");
+          const { data } = await axiosInstance.get("api/accounts/home/");
           loginUser(data);
         } catch (error) {
           console.log("Not Authorized");
@@ -109,11 +109,11 @@ function Home() {
    *              tabs after receiving the counts from the backend.
    * ------------------------------------------------------------------------- */
   useEffect(() => {
-    if(!user) return;
+    if(!user || !user.email) return;
 
     const getCounts = async () => {
       try{
-        const response = await axios.get("http://127.0.0.1:8000/api/projectcount/",{
+        const response = await axiosInstance.get("api/projectcount/",{
           params: {email:user.email}
         });
         setCounts({createdprojects: response.data["createdprojects"], 

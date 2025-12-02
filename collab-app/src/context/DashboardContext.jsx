@@ -3,6 +3,7 @@
  * @description Manages global dashboard refresh triggers so that components such as
  *              JoinTeam, CreateTeam, and MyTeams can request the dashboard to re-fetch
  *              project counts or update UI when changes occur.
+ * @author Pranav Singh
  */
 
 import React, { createContext, useContext, useState } from "react";

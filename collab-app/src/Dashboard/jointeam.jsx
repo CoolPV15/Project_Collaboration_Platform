@@ -19,6 +19,7 @@
 
 import React, { useEffect, useContext, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../Interceptors/axiosInstance";
 import { AuthContext } from "../context/AuthProvider.jsx";
 import SuccessToast from "../toasts/SuccessToast.jsx";
 import ErrorToast from "../toasts/ErrorToast.jsx";
@@ -64,7 +65,7 @@ function JoinTeam() {
 
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/projects/", {
+        const response = await axiosInstance.get("api/projects/", {
           params: { email: user.email, frontend: user.frontend, backend: user.backend },
         });
         setProjects(response.data || []);
@@ -114,7 +115,7 @@ function JoinTeam() {
     };
 
     try {
-      await axios.post("http://127.0.0.1:8000/api/projectrequests/", new_request);
+      await axiosInstance.post("api/projectrequests/", new_request);
       setSuccess("Request sent successfully!");
       triggerRefresh();
       setRefresh((prev) => !prev);

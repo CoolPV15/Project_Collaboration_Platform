@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useContext, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../../Interceptors/axiosInstance";
 import { AuthContext } from "../../context/AuthProvider.jsx";
 
 /**
@@ -44,8 +45,8 @@ function JoinedProjects() {
 
     const fetchProjects = async () => {
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/joinedprojects/",
+        const response = await axiosInstance.get(
+          "api/joinedprojects/",
           {
             params: { email: user.email },
           }
@@ -73,8 +74,8 @@ function JoinedProjects() {
     setMembersLoading(true);
 
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/projectmembersdisplay/",
+      const response = await axiosInstance.get(
+        "api/projectmembersdisplay/",
         {
           params: {
             email: project.owner_email,

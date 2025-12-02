@@ -9,6 +9,7 @@
 
 import React, { useState, useContext } from "react";
 import axios from "axios";
+import axiosInstance from "../Interceptors/axiosInstance";
 import { AuthContext } from "../context/AuthProvider.jsx";
 import SuccessToast from "../toasts/SuccessToast.jsx";
 import { useDashboard } from "../context/DashboardContext.jsx";
@@ -79,7 +80,7 @@ function CreateTeam() {
     };
 
     try {
-      await axios.post("http://127.0.0.1:8000/api/projectleads/", project);
+      await axiosInstance.post("api/projectleads/", project);
       console.log("Project Created Successfully");
       setCreated(true);
       triggerRefresh();
